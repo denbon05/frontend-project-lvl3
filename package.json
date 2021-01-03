@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "test": "jest --colors",
-    "build": "webpack"
+    "build": "webpack",
+    "start:dev": "webpack-dev-server"
   },
   "jest": {
     "verbose": true,
