@@ -22,12 +22,12 @@ const validate = (uri, feeds) => {
 };
 
 const getTitleInfo = (rssElement) => {
-  const channel = rssElement.querySelector('channel');
-  const title = channel.querySelector('title');
-  const description = channel.querySelector('description');
+  const channelElement = rssElement.querySelector('channel');
+  const titleElement = channelElement.querySelector('title');
+  const descriptionElement = channelElement.querySelector('description');
   return {
-    title: title.textContent,
-    description: description.textContent,
+    title: titleElement.textContent,
+    description: descriptionElement.textContent,
   };
 };
 
@@ -35,44 +35,54 @@ const getPosts = (rssElement, feedId) => {
   const items = rssElement.getElementsByTagName('item');
   return Object.values(items)
     .map((item) => {
-      const link = item.querySelector('link');
-      const title = item.querySelector('title');
-      const description = item.querySelector('description');
+      const linkElement = item.querySelector('link');
+      const titleElement = item.querySelector('title');
+      const descriptionElement = item.querySelector('description');
       return {
-        link: link.textContent,
-        title: title.textContent,
-        description: description.textContent,
+        link: linkElement.textContent,
+        title: titleElement.textContent,
+        description: descriptionElement.textContent,
         feedId,
+        id: _.uniqueId(),
       };
     });
 };
 
-const getRSS = (uri) => axios.get(uri)
-  .then((response) => {
-    const { data } = response;
-    const parser = new DOMParser();
-    const parsedData = parser.parseFromString(data, 'application/xml');
-    const rssElement = parsedData.querySelector('rss');
-    if (rssElement) {
+const getRSS = (uri) => {
+  const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+  return axios.get(`${proxyurl}${uri}`)
+    .then((response) => {
+      const { data } = response;
+      const parser = new DOMParser();
+      const parsedData = parser.parseFromString(data, 'application/xml');
+      const rssElement = parsedData.querySelector('rss');
       console.log('rssElement=>', rssElement);
-      return { err: null, rssElement };
-    }
-    return { err: "This source doesn't contain valid rss" };
-  })
-  .catch((err) => {
-    console.log('err.message=>', err.message);
-    return { err: err.message };
-  });
+      if (rssElement) {
+        console.log('rssElement=>', rssElement);
+        return { err: null, rssElement };
+      }
+      return { err: "This source doesn't contain valid rss" };
+    })
+    .catch((err) => {
+      console.log('err.message=>', err.message);
+      return { err: err.message };
+    });
+};
+
+// const makePostsEvents = (posts) => {
+//   posts.forEach(({ title, id, link, description }) => {
+//   const postEl =
+//   });
+// };
 
 export default () => {
   const state = {
     feeds: [],
     posts: [],
-    error: null,
     form: {
       status: 'filling',
       field: {
-        name: {
+        url: {
           valid: true,
           error: null,
         },
@@ -95,21 +105,22 @@ export default () => {
     const error = validate(uri, state.feeds);
     if (error) {
       console.log('error_validate=>', error);
-      watched.form.field.name = { error, valid: false };
+      watched.form.field.url = { error, valid: false };
       return;
     }
-    watched.form.field.name = { error: null, valid: true };
-    watched.status = 'loading';
+    watched.form.field.url = { error: null, valid: true };
+    watched.form.status = 'loading';
     getRSS(uri).then(({ err, rssElement }) => {
       if (err) {
         watched.form.status = 'failed';
-        watched.error = err;
+        watched.form.field.url = { error: err, valid: false };
       } else {
         const id = _.uniqueId();
         watched.feeds.push({ ...getTitleInfo(rssElement), link: uri, id });
-        watched.posts.push(getPosts(rssElement, id));
-        console.log('state=>', state);
+        watched.posts.push(...getPosts(rssElement, id));
+        console.log('end_state=>', state);
         watched.form.status = 'filling';
+        // makePostsEvents(state.posts);
       }
     });
   });
