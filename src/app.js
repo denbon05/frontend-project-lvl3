@@ -56,7 +56,7 @@ const getRSS = (uri) => {
   // const proxyurl = 'https://api.allorigins.win/raw?url=';
   // const requestUrl = `${proxyurl}${uri}`;
   console.log('uri=>', uri);
-  axios.get(uri)
+  return axios.get(uri)
     .then((response) => {
       const { data } = response;
       const parser = new DOMParser();
