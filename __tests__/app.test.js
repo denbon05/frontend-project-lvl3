@@ -31,7 +31,7 @@ beforeEach(() => {
 
 test('form is disabled while submitting', async () => {
   const uri = 'http://lorem-rss.herokuapp.com/feed';
-  const scope = nock('http://lorem-rss.herokuapp.com/feed');
+  const scope = nock('http://localhost');
 
   userEvent.type(elements.input, uri);
   expect(elements.submit).not.toBeDisabled();
@@ -43,23 +43,8 @@ test('form is disabled while submitting', async () => {
   });
 
   // await waitFor(() => {
-  //   expect(screen.getByRole('list')).toHaveTextContent(name);
+  //   expect(screen.getByRole('list')).toHaveTextContent('Posts');
   // });
 
   scope.done();
 });
-
-// test('can add rss', async () => {
-//   const uri = 'https://ru.hexlet.io/lessons.rss';
-//   const scope = nock('https://ru.hexlet.io/lessons.rss');
-
-//   userEvent.type(elements.input, uri);
-//   userEvent.click(elements.submit);
-
-//   await waitFor(() => {
-//     expect(screen.getByRole('listitem')).toHaveTextContent('Новые уроки на Хекслете');
-//   });
-
-//   scope.done();
-//   scope.persist(false);
-// });

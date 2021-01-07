@@ -34,31 +34,35 @@ const getTitleInfo = (rssElement) => {
 const getPosts = (rssElement, feedId) => {
   const items = rssElement.getElementsByTagName('item');
   return Object.values(items)
-    .map((item) => {
+    .reduce((acc, item) => {
       const linkElement = item.querySelector('link');
       const titleElement = item.querySelector('title');
       const descriptionElement = item.querySelector('description');
-      return {
+      const id = _.uniqueId();
+      acc.byId[id] = {
         link: linkElement.textContent,
         title: titleElement.textContent,
         description: descriptionElement.textContent,
+        id,
         feedId,
-        id: _.uniqueId(),
       };
-    });
+      acc.allIds.push(id);
+      return acc;
+    }, { byId: {}, allIds: [] });
 };
 
 const getRSS = (uri) => {
   const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-  return axios.get(`${proxyurl}${uri}`)
+  const requestUrl = `${proxyurl}${uri}`;
+  return axios.get(requestUrl)
     .then((response) => {
       const { data } = response;
       const parser = new DOMParser();
       const parsedData = parser.parseFromString(data, 'application/xml');
       const rssElement = parsedData.querySelector('rss');
-      console.log('rssElement=>', rssElement);
+      // console.log('rssElement=>', rssElement);
       if (rssElement) {
-        console.log('rssElement=>', rssElement);
+        // console.log('rssElement=>', rssElement);
         return { err: null, rssElement };
       }
       return { err: "This source doesn't contain valid rss" };
@@ -69,16 +73,10 @@ const getRSS = (uri) => {
     });
 };
 
-// const makePostsEvents = (posts) => {
-//   posts.forEach(({ title, id, link, description }) => {
-//   const postEl =
-//   });
-// };
-
 export default () => {
   const state = {
     feeds: [],
-    posts: [],
+    posts: { byId: {}, allIds: [] },
     form: {
       status: 'filling',
       field: {
@@ -117,10 +115,9 @@ export default () => {
       } else {
         const id = _.uniqueId();
         watched.feeds.push({ ...getTitleInfo(rssElement), link: uri, id });
-        watched.posts.push(...getPosts(rssElement, id));
+        watched.posts = { ...state.posts, ...getPosts(rssElement, id) };
         console.log('end_state=>', state);
         watched.form.status = 'filling';
-        // makePostsEvents(state.posts);
       }
     });
   });

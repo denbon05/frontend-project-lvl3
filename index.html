@@ -5,12 +5,12 @@
 		<title>RSS aggregator</title>
 	</head>
 	<body>
-		<div class="modal fade" tabindex="-1">
+		<div class="modal fade" id="modal" style="display: none;" aria-hidden="true" aria-labelledby="modal" tabindex="-1" role="dialog">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title">Modal title</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<button type="button" class="close close-modal" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
@@ -19,7 +19,7 @@
 					</div>
 					<div class="modal-footer">
 						<a role="button" href="#" class="btn btn-primary full-article">Full article</a>
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn close-modal btn-secondary" data-dismiss="modal">Close</button>
 					</div>
 				</div>
 			</div>
