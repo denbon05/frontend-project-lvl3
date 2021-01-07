@@ -48,15 +48,14 @@ const getPosts = (rssElement, feedId) => {
       };
       acc.allIds.push(id);
       return acc;
-    }, { byId: {}, allIds: [] });
+		}, { byId: {}, allIds: [] });
 };
 
 const getRSS = (uri) => {
   // https://api.allorigins.win/raw?url=https://example.org/
-  // const proxyurl = 'https://api.allorigins.win/raw?url=';
-  // const requestUrl = `${proxyurl}${uri}`;
-  console.log('uri=>', uri);
-  return axios.get(uri)
+  const proxyurl = 'https://api.allorigins.win/raw?url=';
+  const requestUrl = `${proxyurl}${uri}`;
+  return axios.get(requestUrl)
     .then((response) => {
       const { data } = response;
       const parser = new DOMParser();
@@ -116,8 +115,12 @@ export default () => {
         watched.form.field.url = { error: err, valid: false };
       } else {
         const id = _.uniqueId();
-        watched.feeds.push({ ...getTitleInfo(rssElement), link: uri, id });
-        watched.posts = { ...state.posts, ...getPosts(rssElement, id) };
+				watched.feeds.push({ ...getTitleInfo(rssElement), link: uri, id });
+				const newPosts = getPosts(rssElement, id);
+				watched.posts = {
+					allIds: newPosts.allIds.concat(state.posts.allIds),
+					byId: { ...newPosts.byId, ...state.posts.byId },
+				};
         console.log('end_state=>', state);
         watched.form.status = 'filling';
       }

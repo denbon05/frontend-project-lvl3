@@ -78,7 +78,6 @@ const makePostsEvents = ({ byId }) => {
   Object.values(btnsModal).forEach((btnEl) => {
     const { id } = btnEl.dataset;
     const { title, description, link } = byId[id];
-    console.log('btnEl=>', btnEl);
     btnEl.addEventListener('click', (e) => {
       e.preventDefault();
       showModal(title, description, link);
@@ -104,7 +103,7 @@ const renderFeeds = (feedsColl) => {
   feedsList.innerHTML = feedsColl
     .map(({ title, description }) => (
       `<li class="list-group-item"><h3>${title}</h3><p>${description}</p></li>`
-    ));
+    )).join('');
 };
 
 const renderPosts = (postsColl) => {
