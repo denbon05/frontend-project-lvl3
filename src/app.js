@@ -52,7 +52,8 @@ const getPosts = (rssElement, feedId) => {
 };
 
 const getRSS = (uri) => {
-  const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+  // https://api.allorigins.win/raw?url=https://example.org/
+  const proxyurl = 'https://api.allorigins.win/raw?url=';
   const requestUrl = `${proxyurl}${uri}`;
   return axios.get(requestUrl)
     .then((response) => {
