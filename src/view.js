@@ -1,4 +1,6 @@
+import i18next from 'i18next';
 import onChange from 'on-change';
+import resources from './locales';
 
 const onError = (error = null) => {
   const inputEl = document.getElementById('rssInput');
@@ -14,6 +16,17 @@ const onError = (error = null) => {
     divErrEl.className = 'text-danger';
     containerInputEl.appendChild(divErrEl);
   }
+};
+
+const renderTemplateText = () => {
+  const mainTitleEl = document.querySelector('.main-title');
+  const leadEl = document.querySelector('.lead');
+  const buttonAddEl = document.getElementById('buttonAdd');
+  const exampleEl = document.getElementById('urlExample');
+  mainTitleEl.textContent = i18next.t('form.mainTitle');
+  leadEl.textContent = i18next.t('form.formLead');
+  buttonAddEl.textContent = i18next.t('form.buttonAdd');
+  exampleEl.textContent = i18next.t('form.example');
 };
 
 const rederForm = (status) => {
@@ -55,6 +68,8 @@ const showModal = (title, body, link) => {
   const fullArticleButtonEl = document.querySelector('.full-article');
   const closeModalBtns = document.getElementsByClassName('close-modal');
   const bgFadeEl = document.createElement('div');
+  document.querySelector('.btn-close-modal').textContent = i18next.t('modal.closeModalButton');
+  fullArticleButtonEl.textContent = i18next.t('modal.oppenLinkButton');
   bgFadeEl.className = 'modal-backdrop fade show';
   document.body.appendChild(bgFadeEl);
   modalTitleEl.textContent = title;
@@ -94,7 +109,7 @@ const renderFeeds = (feedsColl) => {
   feedsRow.className = 'row';
   const feedsCol = document.createElement('div');
   feedsCol.className = 'col-md-10 col-lg-8 mx-auto feeds';
-  feedsCol.innerHTML = '<h2>Feeds</h2>';
+  feedsCol.innerHTML = `<h2>${i18next.t('feedsTitle')}</h2>`;
   const feedsList = document.createElement('ul');
   feedsList.className = 'list-group mb-5';
   rssContainer.appendChild(feedsRow);
@@ -116,7 +131,7 @@ const renderPosts = (postsColl) => {
   postsRow.id = 'postsRow';
   const postsCol = document.createElement('div');
   postsCol.className = 'col-md-10 col-lg-8 mx-auto posts';
-  postsCol.innerHTML = '<h2>Posts</h2>';
+  postsCol.innerHTML = `<h2>${i18next.t('postsTitle')}</h2>`;
   const postsList = document.createElement('ul');
   postsList.className = 'list-group mb-5';
   rssContainer.appendChild(postsRow);
@@ -128,14 +143,29 @@ const renderPosts = (postsColl) => {
       return [
         '<li class="list-group-item d-flex justify-content-between align-items-start">',
         `<a href="${link}" target="_blank" data-id="${id}" rel="Post title" class="font-weight-normal">${title}</a >`,
-        `<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-toggle="modal" data-target="#modal">Preview</button>`,
+        `<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-toggle="modal" data-target="#modal">${i18next.t('postsButtonPreview')}</button>`,
         '</li>',
       ].join('');
     }).join('');
   makePostsEvents(postsColl);
 };
 
-const initView = (state, elements) => {
+const renderSwitchLngButton = (lng) => {
+  i18next.init({
+    lng,
+    debug: true,
+    resources,
+  });
+  const lngButtons = document.getElementsByClassName('lng-btn');
+  Object.values(lngButtons).forEach((btnEl) => {
+    btnEl.className = 'btn lng-btn'; // eslint-disable-line
+    if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
+    else btnEl.classList.add('btn-outline-secondary');
+  });
+  renderTemplateText();
+};
+
+export default (state, elements) => {
   elements.inputRss.focus();
 
   const mapping = {
@@ -143,6 +173,7 @@ const initView = (state, elements) => {
     'form.field.url': (value) => renderError(value),
     feeds: (feedsColl) => renderFeeds(feedsColl),
     posts: (postsColl) => renderPosts(postsColl),
+    lng: (language) => renderSwitchLngButton(language),
   };
 
   const watchedState = onChange(state, (path, value) => {
@@ -151,9 +182,11 @@ const initView = (state, elements) => {
     if (mapping[path]) {
       mapping[path](value);
     }
+    if (path === 'lng') {
+      mapping.feeds(state.feeds);
+      mapping.posts(state.posts);
+    }
   });
 
   return watchedState;
 };
-
-export default initView;

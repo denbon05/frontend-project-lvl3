@@ -1,13 +1,23 @@
 import _ from 'lodash';
 import * as yup from 'yup';
 import axios from 'axios';
+import i18next from 'i18next';
 import initView from './view';
+import resources from './locales';
 
 const wasAdded = (feeds, link) => feeds
   .some((item) => item.link === link);
 
 const validate = (uri, feeds) => {
-  if (wasAdded(feeds, uri)) return 'Rss already exists';
+  if (wasAdded(feeds, uri)) return i18next.t('errors.existRss');
+
+  yup.setLocale({
+    string: {
+      url: i18next.t('errors.validURL'),
+      required: i18next.t('errors.required'),
+    },
+  });
+
   const schema = yup
     .string().url()
     .trim()
@@ -48,25 +58,24 @@ const getPosts = (rssElement, feedId) => {
       };
       acc.allIds.push(id);
       return acc;
-		}, { byId: {}, allIds: [] });
+    }, { byId: {}, allIds: [] });
 };
 
 const getRSS = (uri) => {
   // https://api.allorigins.win/raw?url=https://example.org/
-  const proxyurl = 'https://api.allorigins.win/raw?url=';
+  const proxyurl = 'https://cors-anywhere.herokuapp.com/';
   const requestUrl = `${proxyurl}${uri}`;
   return axios.get(requestUrl)
     .then((response) => {
+      // console.log('response=>', response);
       const { data } = response;
       const parser = new DOMParser();
       const parsedData = parser.parseFromString(data, 'application/xml');
       const rssElement = parsedData.querySelector('rss');
-      // console.log('rssElement=>', rssElement);
       if (rssElement) {
-        // console.log('rssElement=>', rssElement);
         return { err: null, rssElement };
       }
-      return { err: "This source doesn't contain valid rss" };
+      return { err: i18next.t('errors.sourceWithoutRss') };
     })
     .catch((err) => {
       console.log('err.message=>', err.message);
@@ -75,7 +84,14 @@ const getRSS = (uri) => {
 };
 
 export default () => {
+  i18next.init({
+    lng: 'en',
+    debug: true,
+    resources,
+  });
+
   const state = {
+    lng: 'en',
     feeds: [],
     posts: { byId: {}, allIds: [] },
     form: {
@@ -115,15 +131,23 @@ export default () => {
         watched.form.field.url = { error: err, valid: false };
       } else {
         const id = _.uniqueId();
-				watched.feeds.push({ ...getTitleInfo(rssElement), link: uri, id });
-				const newPosts = getPosts(rssElement, id);
-				watched.posts = {
-					allIds: newPosts.allIds.concat(state.posts.allIds),
-					byId: { ...newPosts.byId, ...state.posts.byId },
-				};
+        watched.feeds.push({ ...getTitleInfo(rssElement), link: uri, id });
+        const newPosts = getPosts(rssElement, id);
+        watched.posts = {
+          allIds: newPosts.allIds.concat(state.posts.allIds),
+          byId: { ...newPosts.byId, ...state.posts.byId },
+        };
         console.log('end_state=>', state);
         watched.form.status = 'filling';
       }
+    });
+  });
+
+  const lngButtons = document.getElementsByClassName('lng-btn');
+  Object.values(lngButtons).forEach((btnEl) => {
+    btnEl.addEventListener('click', (e) => {
+      e.preventDefault();
+      watched.lng = e.target.id;
     });
   });
 };
