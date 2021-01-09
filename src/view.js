@@ -182,7 +182,7 @@ export default (state, elements) => {
     if (mapping[path]) {
       mapping[path](value);
     }
-    if (path === 'lng') {
+    if (path === 'lng' && document.getElementById('feedsRow')) {
       mapping.feeds(state.feeds);
       mapping.posts(state.posts);
     }

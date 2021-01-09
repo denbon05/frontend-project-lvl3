@@ -84,12 +84,6 @@ const getRSS = (uri) => {
 };
 
 export default () => {
-  i18next.init({
-    lng: 'en',
-    debug: true,
-    resources,
-  });
-
   const state = {
     lng: 'en',
     feeds: [],
@@ -111,7 +105,20 @@ export default () => {
     formRss: document.querySelector('.rss-form'),
   };
 
-  const watched = initView(state, elements);
+	const watched = initView(state, elements);
+	
+	const lngButtons = document.getElementsByClassName('lng-btn');
+  Object.values(lngButtons).forEach((btnEl) => {
+    btnEl.addEventListener('click', (e) => {
+      e.preventDefault();
+			watched.lng = e.target.id;
+			i18next.init({
+				lng: watched.lng,
+				debug: true,
+				resources,
+			});
+    });
+	});
 
   elements.formRss.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -140,14 +147,6 @@ export default () => {
         console.log('end_state=>', state);
         watched.form.status = 'filling';
       }
-    });
-  });
-
-  const lngButtons = document.getElementsByClassName('lng-btn');
-  Object.values(lngButtons).forEach((btnEl) => {
-    btnEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      watched.lng = e.target.id;
     });
   });
 };
