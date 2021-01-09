@@ -5,6 +5,8 @@ import i18next from 'i18next';
 import initView from './view';
 import resources from './locales';
 
+const defaulLanguage = 'en';
+
 const wasAdded = (feeds, link) => feeds
   .some((item) => item.link === link);
 
@@ -84,8 +86,14 @@ const getRSS = (uri) => {
 };
 
 export default () => {
+	i18next.init({
+		lng: defaulLanguage,
+		debug: true,
+		resources,
+	});
+
   const state = {
-    lng: 'en',
+    lng: i18next.language,
     feeds: [],
     posts: { byId: {}, allIds: [] },
     form: {
@@ -112,11 +120,6 @@ export default () => {
     btnEl.addEventListener('click', (e) => {
       e.preventDefault();
 			watched.lng = e.target.id;
-			i18next.init({
-				lng: watched.lng,
-				debug: true,
-				resources,
-			});
     });
 	});
 

@@ -29,6 +29,21 @@ const renderTemplateText = () => {
   exampleEl.textContent = i18next.t('form.example');
 };
 
+const renderSwitchLngButton = (lng = 'en') => {
+  i18next.init({
+    lng,
+    debug: true,
+    resources,
+  });
+  const lngButtons = document.getElementsByClassName('lng-btn');
+  Object.values(lngButtons).forEach((btnEl) => {
+    btnEl.className = 'btn lng-btn'; // eslint-disable-line
+    if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
+    else btnEl.classList.add('btn-outline-secondary');
+  });
+  renderTemplateText();
+};
+
 const rederForm = (status) => {
   const buttonEl = document.getElementById('buttonAdd');
   const inputEl = document.getElementById('rssInput');
@@ -79,13 +94,17 @@ const showModal = (title, body, link) => {
   modalEl.classList.add('show');
   modalEl.removeAttribute('aria-hiden');
   modalEl.setAttribute('style', 'display: block; padding-right: 15px;');
-  modalEl.setAttribute('aria-modal', 'true');
+	modalEl.setAttribute('aria-modal', 'true');
+	const modalContent = document.querySelector('.modal-content');
   Object.values(closeModalBtns).forEach((closeBtnEl) => {
     closeBtnEl.addEventListener('click', (e) => {
       e.preventDefault();
       closeBtn(modalEl, bgFadeEl);
     });
-  });
+	});
+	modalContent.addEventListener('click', (e) => {
+		if (!e.target) closeBtn(modalEl, bgFadeEl);
+	})
 };
 
 const makePostsEvents = ({ byId }) => {
@@ -150,21 +169,6 @@ const renderPosts = (postsColl) => {
   makePostsEvents(postsColl);
 };
 
-const renderSwitchLngButton = (lng) => {
-  i18next.init({
-    lng,
-    debug: true,
-    resources,
-  });
-  const lngButtons = document.getElementsByClassName('lng-btn');
-  Object.values(lngButtons).forEach((btnEl) => {
-    btnEl.className = 'btn lng-btn'; // eslint-disable-line
-    if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
-    else btnEl.classList.add('btn-outline-secondary');
-  });
-  renderTemplateText();
-};
-
 export default (state, elements) => {
   elements.inputRss.focus();
 
@@ -181,8 +185,8 @@ export default (state, elements) => {
     console.log('value=>', value);
     if (mapping[path]) {
       mapping[path](value);
-    }
-    if (path === 'lng' && document.getElementById('feedsRow')) {
+		}
+		if (path === 'lng' && document.getElementById('feedsRow')) {
       mapping.feeds(state.feeds);
       mapping.posts(state.posts);
     }
