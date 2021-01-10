@@ -2,20 +2,28 @@ import i18next from 'i18next';
 import onChange from 'on-change';
 import resources from './locales';
 
+const renderDivErr = (error) => {
+  const containerInputEl = document.getElementById('containerInput');
+  const divErrEl = document.createElement('div');
+  divErrEl.id = 'err';
+  divErrEl.textContent = error;
+  divErrEl.className = 'text-danger';
+  containerInputEl.appendChild(divErrEl);
+};
+
 const onError = (error = null) => {
   const inputEl = document.getElementById('rssInput');
-  const containerInputEl = document.getElementById('containerInput');
   const errEl = document.getElementById('err');
   if (!error) inputEl.classList.remove('is-invalid');
   if (errEl) errEl.remove();
   if (error) {
-    const divErrEl = document.createElement('div');
-    divErrEl.id = 'err';
     inputEl.classList.add('is-invalid');
-    divErrEl.textContent = error;
-    divErrEl.className = 'text-danger';
-    containerInputEl.appendChild(divErrEl);
+    renderDivErr(error);
   }
+};
+
+const renderNetError = (err) => {
+  renderDivErr(err);
 };
 
 const renderTemplateText = () => {
@@ -85,6 +93,14 @@ const addAttributes = (modalEl, bgFadeEl) => {
   document.body.appendChild(bgFadeEl).className = 'modal-backdrop fade show';
 };
 
+const renderClickedLinks = (ids) => {
+  ids.forEach((id) => {
+    const aEl = document.querySelector(`a[data-id="${id}"]`);
+    aEl.classList.remove('font-weight-bold');
+    aEl.classList.add('font-weight-normal');
+  });
+};
+
 const showModal = (title, body, link) => {
   const modalEl = document.querySelector('.modal');
   const modalTitleEl = document.querySelector('.modal-title');
@@ -141,7 +157,7 @@ const renderFeeds = (feedsColl) => {
     )).join('');
 };
 
-const renderPosts = (postsColl) => {
+const renderPosts = (postsColl, clickedPosts) => {
   const { allIds, byId } = postsColl;
   const rssContainer = document.getElementById('rssContainer');
   const postsEl = document.getElementById('postsRow');
@@ -155,17 +171,17 @@ const renderPosts = (postsColl) => {
   const postsList = document.createElement('ul');
   postsList.className = 'list-group mb-5';
   rssContainer.appendChild(postsRow).appendChild(postsCol).appendChild(postsList);
-  postsList.innerHTML = allIds
-    .map((id) => {
-      const { title, link } = byId[id];
-      return [
-        '<li class="list-group-item d-flex justify-content-between align-items-start">',
-        `<a href="${link}" target="_blank" data-id="${id}" rel="Post title" class="font-weight-normal">${title}</a >`,
-        `<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-toggle="modal" data-target="#modal">${i18next.t('postsButtonPreview')}</button>`,
-        '</li>',
-      ].join('');
-    }).join('');
+  postsList.innerHTML = allIds.map((id) => {
+    const { title, link } = byId[id];
+    return [
+      '<li class="list-group-item d-flex justify-content-between align-items-start">',
+      `<a href="${link}" target="_blank" data-id="${id}" rel="Post title" class="post-link font-weight-bold">${title}</a >`,
+      `<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-toggle="modal" data-target="#modal">${i18next.t('postsButtonPreview')}</button>`,
+      '</li>',
+    ].join('');
+  }).join('');
   makePostsEvents(postsColl);
+  renderClickedLinks(clickedPosts);
 };
 
 export default (state, elements) => {
@@ -174,9 +190,11 @@ export default (state, elements) => {
   const mapping = {
     'form.status': (status) => rederForm(status),
     'form.field.url': (value) => renderError(value),
+    netError: (err) => renderNetError(err),
     feeds: (feedsColl) => renderFeeds(feedsColl),
-    posts: (postsColl) => renderPosts(postsColl),
+    posts: (postsColl) => renderPosts(postsColl, state.clickedPosts),
     lng: (language) => renderSwitchLngButton(language),
+    clickedPosts: (ids) => renderClickedLinks(ids),
   };
 
   const watchedState = onChange(state, (path, value) => {

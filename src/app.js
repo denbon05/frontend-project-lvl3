@@ -67,7 +67,7 @@ const getNewPosts = (oldPosts, rssElement, feedId) => {
     const { title, description } = parseRSSItem(item);
     return !allIds.some((id) => byId[id].title === title && byId[id].description === description);
   });
-  if (newPosts.length === 0) return { allIds: [], byId: [] };
+  if (newPosts.length === 0) return null;
   return makePosts(newPosts, feedId);
 };
 
@@ -98,20 +98,32 @@ const getRSS = (uri) => {
     });
 };
 
+const makePostsEvents = (clickedIds) => {
+  const postsLinksEl = document.getElementsByClassName('post-link');
+  Object.values(postsLinksEl).forEach((linkEl) => {
+    linkEl.addEventListener('mouseup', (e) => {
+      const clickedElId = e.target.dataset.id;
+      clickedIds.push(clickedElId);
+    });
+  });
+};
+
 const autoupdateState = (state) => {
-  const { form, posts } = state;
+  const { form, posts, clickedPosts } = state;
   const links = state.feeds.map(({ link, id }) => ({ link, id }));
   links.forEach(({ link, id }) => {
     getRSS(link).then(({ err, rssElement }) => {
       if (err) {
-        form.status = 'failed';
-        form.field.url = { error: err, valid: false };
+        state.netError = err; // eslint-disable-line
       } else {
         const newPosts = getNewPosts(posts, rssElement, id);
-        state.posts = { // eslint-disable-line
-          allIds: newPosts.allIds.concat(posts.allIds),
-          byId: { ...newPosts.byId, ...posts.byId },
-        };
+        if (newPosts) {
+					state.posts = { // eslint-disable-line
+            allIds: newPosts.allIds.concat(posts.allIds),
+            byId: { ...posts.byId, ...newPosts.byId },
+          };
+          makePostsEvents(clickedPosts);
+        }
         form.status = 'filling';
       }
     });
@@ -132,6 +144,8 @@ export default () => {
     lng: i18next.language,
     feeds: [],
     posts: { byId: {}, allIds: [] },
+    clickedPosts: [],
+    netError: null,
     form: {
       status: 'filling',
       field: {
@@ -184,8 +198,9 @@ export default () => {
           byId: { ...newPosts.byId, ...state.posts.byId },
         };
         watched.form.status = 'filling';
+        autoupdateState(watched);
+        makePostsEvents(watched.clickedPosts);
       }
     });
-    autoupdateState(watched);
   });
 };
