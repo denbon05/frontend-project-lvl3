@@ -1,7 +1,8 @@
 {
   "name": "@hexlet/code",
   "version": "1.0.0",
-  "description": "RSS agreggator",
+	"description": "RSS agreggator",
+	"main": "index.js",
   "scripts": {
     "test": "jest --colors",
     "build": "webpack",
