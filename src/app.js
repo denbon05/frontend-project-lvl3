@@ -114,11 +114,11 @@ const autoupdateState = (state) => {
   links.forEach(({ link, id }) => {
     getRSS(link).then(({ err, rssElement }) => {
       if (err) {
-        state.netError = err; // eslint-disable-line
+        state.netError = err;
       } else {
         const newPosts = getNewPosts(posts, rssElement, id);
         if (newPosts) {
-					state.posts = { // eslint-disable-line
+          state.posts = {
             allIds: newPosts.allIds.concat(posts.allIds),
             byId: { ...posts.byId, ...newPosts.byId },
           };

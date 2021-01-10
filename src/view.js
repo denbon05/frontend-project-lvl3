@@ -45,7 +45,7 @@ const renderSwitchLngButton = (lng = 'en') => {
   });
   const lngButtons = document.getElementsByClassName('lng-btn');
   Object.values(lngButtons).forEach((btnEl) => {
-    btnEl.className = 'btn lng-btn'; // eslint-disable-line
+    btnEl.className = 'btn lng-btn';
     if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
     else btnEl.classList.add('btn-outline-secondary');
   });

@@ -1,8 +1,7 @@
 {
   "name": "@hexlet/code",
   "version": "1.0.0",
-	"description": "RSS agreggator",
-	"main": "src/init.js",
+  "description": "RSS agreggator",
   "scripts": {
     "test": "jest --colors",
     "build": "webpack",
@@ -51,7 +50,6 @@
     "webpack-dev-server": "^3.1.14"
   },
   "dependencies": {
-		"@hexlet/code": "file:.",
     "@popperjs/core": "^2.6.0",
     "axios": "^0.21.1",
     "bootstrap": "^4.5.3",
