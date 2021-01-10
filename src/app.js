@@ -43,24 +43,37 @@ const getTitleInfo = (rssElement) => {
   };
 };
 
+const parseRSSItem = (rssItem) => ({
+  link: rssItem.querySelector('link').textContent,
+  title: rssItem.querySelector('title').textContent,
+  description: rssItem.querySelector('description').textContent,
+});
+
+const makePosts = (items, feedId) => items.reduce((acc, item) => {
+  const id = _.uniqueId();
+  acc.byId[id] = {
+    ...parseRSSItem(item),
+    id,
+    feedId,
+  };
+  acc.allIds.push(id);
+  return acc;
+}, { byId: {}, allIds: [] });
+
+const getNewPosts = (oldPosts, rssElement, feedId) => {
+  const { allIds, byId } = oldPosts;
+  const rssItems = rssElement.getElementsByTagName('item');
+  const newPosts = Object.values(rssItems).filter((item) => {
+    const { title, description } = parseRSSItem(item);
+    return !allIds.some((id) => byId[id].title === title && byId[id].description === description);
+  });
+  if (newPosts.length === 0) return { allIds: [], byId: [] };
+  return makePosts(newPosts, feedId);
+};
+
 const getPosts = (rssElement, feedId) => {
   const items = rssElement.getElementsByTagName('item');
-  return Object.values(items)
-    .reduce((acc, item) => {
-      const linkElement = item.querySelector('link');
-      const titleElement = item.querySelector('title');
-      const descriptionElement = item.querySelector('description');
-      const id = _.uniqueId();
-      acc.byId[id] = {
-        link: linkElement.textContent,
-        title: titleElement.textContent,
-        description: descriptionElement.textContent,
-        id,
-        feedId,
-      };
-      acc.allIds.push(id);
-      return acc;
-    }, { byId: {}, allIds: [] });
+  return makePosts(Object.values(items), feedId);
 };
 
 const getRSS = (uri) => {
@@ -85,12 +98,35 @@ const getRSS = (uri) => {
     });
 };
 
+const autoupdateState = (state) => {
+  const { form, posts } = state;
+  const links = state.feeds.map(({ link, id }) => ({ link, id }));
+  links.forEach(({ link, id }) => {
+    getRSS(link).then(({ err, rssElement }) => {
+      if (err) {
+        form.status = 'failed';
+        form.field.url = { error: err, valid: false };
+      } else {
+        const newPosts = getNewPosts(posts, rssElement, id);
+        state.posts = { // eslint-disable-line
+          allIds: newPosts.allIds.concat(posts.allIds),
+          byId: { ...newPosts.byId, ...posts.byId },
+        };
+        form.status = 'filling';
+      }
+    });
+  });
+  setTimeout(() => {
+    autoupdateState(state);
+  }, 5000);
+};
+
 export default () => {
-	i18next.init({
-		lng: defaulLanguage,
-		debug: true,
-		resources,
-	});
+  i18next.init({
+    lng: defaulLanguage,
+    debug: true,
+    resources,
+  });
 
   const state = {
     lng: i18next.language,
@@ -113,15 +149,15 @@ export default () => {
     formRss: document.querySelector('.rss-form'),
   };
 
-	const watched = initView(state, elements);
-	
-	const lngButtons = document.getElementsByClassName('lng-btn');
+  const watched = initView(state, elements);
+
+  const lngButtons = document.getElementsByClassName('lng-btn');
   Object.values(lngButtons).forEach((btnEl) => {
     btnEl.addEventListener('click', (e) => {
       e.preventDefault();
-			watched.lng = e.target.id;
+      watched.lng = e.target.id;
     });
-	});
+  });
 
   elements.formRss.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -147,9 +183,9 @@ export default () => {
           allIds: newPosts.allIds.concat(state.posts.allIds),
           byId: { ...newPosts.byId, ...state.posts.byId },
         };
-        console.log('end_state=>', state);
         watched.form.status = 'filling';
       }
     });
+    autoupdateState(watched);
   });
 };

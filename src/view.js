@@ -76,6 +76,15 @@ const closeBtn = (modalEl, bgEl) => {
   modalEl.removeAttribute('aria-modal');
 };
 
+const addAttributes = (modalEl, bgFadeEl) => {
+  modalEl.classList.add('show');
+  modalEl.removeAttribute('aria-hiden');
+  modalEl.setAttribute('style', 'display: block; padding-right: 15px;');
+  modalEl.setAttribute('aria-modal', 'true');
+  // bgFadeEl.className = 'modal-backdrop fade show';
+  document.body.appendChild(bgFadeEl).className = 'modal-backdrop fade show';
+};
+
 const showModal = (title, body, link) => {
   const modalEl = document.querySelector('.modal');
   const modalTitleEl = document.querySelector('.modal-title');
@@ -83,28 +92,20 @@ const showModal = (title, body, link) => {
   const fullArticleButtonEl = document.querySelector('.full-article');
   const closeModalBtns = document.getElementsByClassName('close-modal');
   const bgFadeEl = document.createElement('div');
+  addAttributes(modalEl, bgFadeEl);
   document.querySelector('.btn-close-modal').textContent = i18next.t('modal.closeModalButton');
   fullArticleButtonEl.textContent = i18next.t('modal.oppenLinkButton');
-  bgFadeEl.className = 'modal-backdrop fade show';
-  document.body.appendChild(bgFadeEl);
   modalTitleEl.textContent = title;
   modalBodyEl.innerHTML = `<p>${body}</p>`;
   fullArticleButtonEl.setAttribute('href', link);
   fullArticleButtonEl.setAttribute('target', '_blank');
-  modalEl.classList.add('show');
-  modalEl.removeAttribute('aria-hiden');
-  modalEl.setAttribute('style', 'display: block; padding-right: 15px;');
-	modalEl.setAttribute('aria-modal', 'true');
-	const modalContent = document.querySelector('.modal-content');
-  Object.values(closeModalBtns).forEach((closeBtnEl) => {
-    closeBtnEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      closeBtn(modalEl, bgFadeEl);
-    });
-	});
-	modalContent.addEventListener('click', (e) => {
-		if (!e.target) closeBtn(modalEl, bgFadeEl);
-	})
+  Object.values(closeModalBtns).forEach((closeBtnEl) => closeBtnEl.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeBtn(modalEl, bgFadeEl);
+  }));
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'modal') closeBtn(modalEl, bgFadeEl);
+  });
 };
 
 const makePostsEvents = ({ byId }) => {
@@ -153,9 +154,7 @@ const renderPosts = (postsColl) => {
   postsCol.innerHTML = `<h2>${i18next.t('postsTitle')}</h2>`;
   const postsList = document.createElement('ul');
   postsList.className = 'list-group mb-5';
-  rssContainer.appendChild(postsRow);
-  postsRow.appendChild(postsCol);
-  postsCol.appendChild(postsList);
+  rssContainer.appendChild(postsRow).appendChild(postsCol).appendChild(postsList);
   postsList.innerHTML = allIds
     .map((id) => {
       const { title, link } = byId[id];
@@ -185,8 +184,8 @@ export default (state, elements) => {
     console.log('value=>', value);
     if (mapping[path]) {
       mapping[path](value);
-		}
-		if (path === 'lng' && document.getElementById('feedsRow')) {
+    }
+    if (path === 'lng' && document.getElementById('feedsRow')) {
       mapping.feeds(state.feeds);
       mapping.posts(state.posts);
     }
