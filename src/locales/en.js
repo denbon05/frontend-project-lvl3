@@ -16,7 +16,7 @@ export default {
     errors: {
       validURL: 'URL must be valid',
       required: 'this field is required',
-      existRss: 'Rss already exists',
+      existRss: 'this must not be one of the following values: {{- uri}}',
       sourceWithoutRss: "This source doesn't contain valid rss",
     },
 

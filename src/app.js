@@ -7,23 +7,26 @@ import resources from './locales';
 
 const defaulLanguage = 'en';
 
-const wasAdded = (feeds, link) => feeds
-  .some((item) => item.link === link);
+// const wasAdded = (feeds, link) => feeds
+//   .some((item) => item.link === link);
 
 const validate = (uri, feeds) => {
-  if (wasAdded(feeds, uri)) return i18next.t('errors.existRss');
+  // if (wasAdded(feeds, uri)) return i18next.t('errors.existRss');
 
   yup.setLocale({
     string: {
       url: i18next.t('errors.validURL'),
       required: i18next.t('errors.required'),
     },
-  });
+	});
+	
+	const links = feeds.map((feed) => feed.link);
 
-  const schema = yup
-    .string().url()
-    .trim()
-    .required();
+	const schema = yup
+		.string().url()
+		.trim()
+		.required()
+		.notOneOf(links, () => i18next.t('errors.existRss', { uri }));
 
   try {
     schema.validateSync(uri);

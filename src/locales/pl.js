@@ -16,7 +16,7 @@ export default {
     errors: {
       validURL: 'URL musi być prawidłowy',
       required: 'to pole jest wymagane',
-      existRss: 'Rss już istnieje',
+      existRss: 'Rss już istnieje: {{- uri}}',
       sourceWithoutRss: 'To źródło nie zawiera prawidłowego rss',
     },
   },

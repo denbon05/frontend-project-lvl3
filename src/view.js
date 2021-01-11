@@ -52,6 +52,8 @@ const renderSwitchLngButton = (lng = 'en') => {
   renderTemplateText();
 };
 
+
+
 const rederForm = (status) => {
   const buttonEl = document.getElementById('buttonAdd');
   const inputEl = document.getElementById('rssInput');
@@ -59,7 +61,7 @@ const rederForm = (status) => {
   switch (status) {
     case 'filling':
       buttonEl.disabled = false;
-      inputEl.value = '';
+			inputEl.value = '';
       return;
     case 'loading':
       buttonEl.disabled = true;
