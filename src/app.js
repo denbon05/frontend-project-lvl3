@@ -18,15 +18,15 @@ const validate = (uri, feeds) => {
       url: i18next.t('errors.validURL'),
       required: i18next.t('errors.required'),
     },
-	});
-	
-	const links = feeds.map((feed) => feed.link);
+  });
 
-	const schema = yup
-		.string().url()
-		.trim()
-		.required()
-		.notOneOf(links, () => i18next.t('errors.existRss', { uri }));
+  const links = feeds.map((feed) => feed.link);
+
+  const schema = yup
+    .string().url()
+    .trim()
+    .required()
+    .notOneOf(links, () => i18next.t('errors.existRss', { uri }));
 
   try {
     schema.validateSync(uri);
@@ -182,7 +182,7 @@ export default () => {
     const uri = formData.get('uri');
     const error = validate(uri, state.feeds);
     if (error) {
-      console.log('error_validate=>', error);
+      console.log('error_validate=>', error, ' |URL is=>', uri);
       watched.form.field.url = { error, valid: false };
       return;
     }
