@@ -1,1 +1,61 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Lorem ipsum feed for an interval of 1 minutes with 10 item(s)]]></title><description><![CDATA[This is a constantly updating lorem ipsum feed]]></description><link>http://example.com/</link><generator>RSS for Node</generator><lastBuildDate>Tue, 12 Jan 2021 23:17:22 GMT</lastBuildDate><pubDate>Tue, 12 Jan 2021 23:17:00 GMT</pubDate><copyright><![CDATA[Michael Bertolacci, licensed under a Creative Commons Attribution 3.0 Unported License.]]></copyright><ttl>1</ttl><item><title><![CDATA[Lorem ipsum 2021-01-12T23:17:00Z]]></title><description><![CDATA[Tempor id anim magna occaecat.]]></description><link>http://example.com/test/1610493420</link><guid isPermaLink="true">http://example.com/test/1610493420</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:17:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:16:00Z]]></title><description><![CDATA[Labore ullamco voluptate consectetur ex.]]></description><link>http://example.com/test/1610493360</link><guid isPermaLink="true">http://example.com/test/1610493360</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:16:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:15:00Z]]></title><description><![CDATA[Occaecat sit dolore proident amet ullamco et irure reprehenderit.]]></description><link>http://example.com/test/1610493300</link><guid isPermaLink="true">http://example.com/test/1610493300</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:15:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:14:00Z]]></title><description><![CDATA[Ea esse laboris incididunt anim mollit dolor dolor.]]></description><link>http://example.com/test/1610493240</link><guid isPermaLink="true">http://example.com/test/1610493240</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:14:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:13:00Z]]></title><description><![CDATA[Consectetur fugiat enim et eu.]]></description><link>http://example.com/test/1610493180</link><guid isPermaLink="true">http://example.com/test/1610493180</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:13:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:12:00Z]]></title><description><![CDATA[Pariatur elit ipsum esse in commodo non.]]></description><link>http://example.com/test/1610493120</link><guid isPermaLink="true">http://example.com/test/1610493120</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:12:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:11:00Z]]></title><description><![CDATA[Cupidatat laborum nostrud dolor culpa ea consequat.]]></description><link>http://example.com/test/1610493060</link><guid isPermaLink="true">http://example.com/test/1610493060</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:11:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:10:00Z]]></title><description><![CDATA[Magna Lorem aliquip excepteur mollit aute do do dolor ex consectetur aliquip sunt occaecat.]]></description><link>http://example.com/test/1610493000</link><guid isPermaLink="true">http://example.com/test/1610493000</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:10:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:09:00Z]]></title><description><![CDATA[Reprehenderit et est qui ex aute mollit tempor dolore commodo.]]></description><link>http://example.com/test/1610492940</link><guid isPermaLink="true">http://example.com/test/1610492940</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:09:00 GMT</pubDate></item><item><title><![CDATA[Lorem ipsum 2021-01-12T23:08:00Z]]></title><description><![CDATA[Elit esse esse ea nostrud cupidatat esse occaecat minim ipsum anim ut.]]></description><link>http://example.com/test/1610492880</link><guid isPermaLink="true">http://example.com/test/1610492880</guid><dc:creator><![CDATA[John Smith]]></dc:creator><pubDate>Tue, 12 Jan 2021 23:08:00 GMT</pubDate></item></channel></rss>
+<?xml version="1.0" encoding="iso-8859-2"?>
+<rss version="2.0">
+	<channel>
+		<title>www.cire.pl - Wiadomości - kraj</title>
+		<link>https://www.cire.pl</link>
+		<description>www.cire.pl - centrum informacji o rynku energii - energetyka, rynek energii</description>
+		<language>pl</language>
+		<copyright>Copyright (c) 2002-2021 Agencja Rynku Energii S.A.</copyright>
+		<pubDate>Wed, 13 Jan 2021 23:20:07 GMT</pubDate>
+		<lastBuildDate>Wed, 13 Jan 2021 23:20:07 GMT</lastBuildDate>
+		<image>
+			<title>CIRE.pl - Centrum Informacji o Rynku Energii</title>
+			<url>https://www.cire.pl/grafika/cire_logo_rss.gif</url>
+			<link>https://www.cire.pl</link>
+			<width>144</width>
+			<height>31</height>
+		</image>
+		<item>
+			<title>Panele fotowoltaiczne dla miejskiej spółki komunikacyjnej w Białymstoku</title>
+			<link>https://www.cire.pl/item,210111,1,0,0,0,0,0,panele-fotowoltaiczne-dla-miejskiej-spolki-komunikacyjnej-w-bialymstoku.html?utm_source=rss&amp;utm_campaign=rss&amp;utm_medium=link</link>
+			<description>Blisko 650 paneli fotowoltaicznych o łącznej maksymalnej mocy 202,5 kW zamontowano na dachu i...</description>
+			<pubDate>Wed, 13 Jan 2021 17:33:53 GMT</pubDate>
+			<guid>https://www.cire.pl/item,210111,1,0,0,0,0,0.html</guid>
+		</item>
+		<item>
+			<title>Rekordowe dofinansowanie z NCBR na technologię recyklingu baterii litowo-jonowych i zużytych katalizatorów samochodowych</title>
+			<link>https://www.cire.pl/item,210108,1,0,0,0,0,0,rekordowe-dofinansowanie-z-ncbr-na-technologie-recyklingu-baterii-litowo-jonowych-i-zuzytych-katalizatorow-samochodowych.html?utm_source=rss&amp;utm_campaign=rss&amp;utm_medium=link</link>
+			<description>&lt;img src=&quot;https://www.cire.pl/img/bibl/2015/11/ncbir_narodowe_centrum.jpg&quot; alt=&quot;&quot; align=&quot;left&quot; /&gt; Spółka Elemental Strategic Metals otrzymała od Narodowego Centrum Badań i Rozwoju 332 mln zł na...</description>
+			<pubDate>Wed, 13 Jan 2021 15:34:55 GMT</pubDate>
+			<guid>https://www.cire.pl/item,210108,1,0,0,0,0,0.html</guid>
+		</item>
+		<item>
+			<title>Spółka ARP z elektrycznym autobusem dla samorządów</title>
+			<link>https://www.cire.pl/item,210107,1,0,0,0,0,0,spolka-arp-z-elektrycznym-autobusem-dla-samorzadow.html?utm_source=rss&amp;utm_campaign=rss&amp;utm_medium=link</link>
+			<description>&lt;img src=&quot;https://www.cire.pl/img/upload/2021/1/arp_ebus.jpg&quot; alt=&quot;&quot; align=&quot;left&quot; /&gt; ARP E-Vehicles, spółka zależna Agencji Rozwoju Przemysłu, podczas konferencji &quot;Autobus...</description>
+			<pubDate>Wed, 13 Jan 2021 14:59:53 GMT</pubDate>
+			<guid>https://www.cire.pl/item,210107,1,0,0,0,0,0.html</guid>
+		</item>
+		<item>
+			<title>Sigma z rekordowym wzrostem sprzedaży</title>
+			<link>https://www.cire.pl/item,210098,1,0,0,0,0,0,sigma-z-rekordowym-wzrostem-sprzedazy.html?utm_source=rss&amp;utm_campaign=rss&amp;utm_medium=link</link>
+			<description>&lt;img src=&quot;https://www.cire.pl/img/upload/2021/1/pm.jpg&quot; alt=&quot;&quot; align=&quot;left&quot; /&gt; Sigma Technology &amp; Energy Solutions z siedzibą w Tychach, jedna z czołowych polskich firm...</description>
+			<pubDate>Wed, 13 Jan 2021 14:00:30 GMT</pubDate>
+			<guid>https://www.cire.pl/item,210098,1,0,0,0,0,0.html</guid>
+		</item>
+		<item>
+			<title>Polskie miasta wśród najbardziej zakorkowanych w Europie</title>
+			<link>https://www.cire.pl/item,210097,1,0,0,0,0,0,polskie-miasta-wsrod-najbardziej-zakorkowanych-w-europie.html?utm_source=rss&amp;utm_campaign=rss&amp;utm_medium=link</link>
+			<description>&lt;img src=&quot;https://www.cire.pl/img/upload/2021/1/jacek_dylag_mmar_xs8_mk_unsplash.jpg&quot; alt=&quot;&quot; align=&quot;left&quot; /&gt; Łódź, Kraków i Wrocław to trzy najbardziej zakorkowane miasta europejskie w kategorii miast poniżej...</description>
+			<pubDate>Wed, 13 Jan 2021 13:49:58 GMT</pubDate>
+			<guid>https://www.cire.pl/item,210097,1,0,0,0,0,0.html</guid>
+		</item>
+		<item>
+			<title>PGE GiEK: Dwa bloki w Elektrowni Dolna Odra przestały produkować energię</title>
+			<link>https://www.cire.pl/item,210095,1,0,0,0,0,0,pge-giek-dwa-bloki-w-elektrowni-dolna-odra-przestaly-produkowac-energie.html?utm_source=rss&amp;utm_campaign=rss&amp;utm_medium=link</link>
+			<description>&lt;img src=&quot;https://www.cire.pl/img/bibl/2017/7/edo1.jpg&quot; alt=&quot;&quot; align=&quot;left&quot; /&gt; W Elektrowni Dolna Odra, należącej do PGE Górnictwo i Energetyka Konwencjonalna z Grupy PGE, 31...</description>
+			<pubDate>Wed, 13 Jan 2021 13:47:14 GMT</pubDate>
+			<guid>https://www.cire.pl/item,210095,1,0,0,0,0,0.html</guid>
+		</item>
+	</channel>
+</rss>

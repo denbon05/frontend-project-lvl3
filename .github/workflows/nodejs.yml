@@ -27,4 +27,5 @@ jobs:
           CI: true
       - name: Run linter
         run: |
+          make pretty
           make fix
