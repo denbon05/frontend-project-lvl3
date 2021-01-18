@@ -212,8 +212,8 @@ export default (state, elements) => {
 	};
 
 	const watchedState = onChange(state, (path, value) => {
-		console.log('path=>', path);
-		console.log('value=>', value);
+		// console.log('path=>', path);
+		// console.log('value=>', value);
 		if (mapping[path]) {
 			mapping[path](value);
 		}

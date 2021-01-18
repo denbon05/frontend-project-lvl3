@@ -3,6 +3,9 @@ install: install-deps
 install-deps:
 	npm ci
 
+start:
+	npm run start:dev
+
 build:
 	npx webpack
 

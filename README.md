@@ -9,3 +9,5 @@
 ### Description
 
 You can view news from different sites.The RSS aggregator automatically monitors updates and adds new articles to the list.
+
+#### <b>`make start`</b> - In the develop mode run webpack server
