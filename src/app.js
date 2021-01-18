@@ -7,12 +7,7 @@ import resources from './locales';
 
 const defaulLanguage = 'en';
 
-// const wasAdded = (feeds, link) => feeds
-//   .some((item) => item.link === link);
-
 const validate = (uri, feeds) => {
-	// if (wasAdded(feeds, uri)) return i18next.t('errors.existRss');
-
 	yup.setLocale({
 		string: {
 			url: i18next.t('errors.validURL'),

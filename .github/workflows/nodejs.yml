@@ -27,5 +27,13 @@ jobs:
           CI: true
       - name: Run linter
         run: |
-          make pretty
+          make format
           make fix
+      - name: Test & publish code coverage
+        # https://github.com/paambaati/codeclimate-action
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageCommand: make cover
+          debug: true

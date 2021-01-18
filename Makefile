@@ -24,7 +24,7 @@ lint:
 fix:
 	npx eslint --fix .
 
-pretty:
+format:
 	npx prettier --write .
 
 .PHONY: test
