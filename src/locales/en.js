@@ -14,9 +14,9 @@ export default {
 			closeModalButton: 'Close',
 		},
 		errors: {
-			validURL: 'URL must be valid',
+			validURL: 'Must be valid url',
 			required: 'this field is required',
-			existRss: 'this must not be one of the following values: {{- uri}}',
+			existRss: 'Rss has been loaded: {{- uri}}',
 			sourceWithoutRss: "This source doesn't contain valid rss",
 		},
 	},
