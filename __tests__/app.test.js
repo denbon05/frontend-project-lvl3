@@ -51,6 +51,14 @@ beforeEach(async () => {
 	app();
 });
 
+test('Test by role and name "textbox, {name: url}"', () => {
+	elements.input = screen.getByRole('textbox', { name: 'url' });
+});
+
+test('Test by role and name "button, {name: add}"', () => {
+	elements.submit = screen.getByRole('button', { name: 'add' });
+});
+
 describe('Show errors in form', () => {
 	const { errors } = getTranslationByLng(en);
 
