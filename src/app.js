@@ -7,7 +7,7 @@ import resources from './locales';
 
 const defaulLanguage = 'en';
 
-const validate = (uri, feeds) => {
+const validate = (url, feeds) => {
 	yup.setLocale({
 		string: {
 			url: i18next.t('errors.validURL'),
@@ -22,10 +22,10 @@ const validate = (uri, feeds) => {
 		.url()
 		.trim()
 		.required()
-		.notOneOf(links, () => i18next.t('errors.existRss', { uri }));
+		.notOneOf(links, () => i18next.t('errors.existRss', { url }));
 
 	try {
-		schema.validateSync(uri);
+		schema.validateSync(url);
 		return null;
 	} catch (err) {
 		return err.message;
@@ -81,12 +81,12 @@ const getPosts = (rssElement, feedId) => {
 	return makePosts(Object.values(items), feedId);
 };
 
-const getRSS = (uri) => {
+const getRSS = (url) => {
 	// https://api.allorigins.win/raw?url=https://example.org/
 	const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-	const requestUrl = `${proxyurl}${uri}`;
+	const requestUrl = `${proxyurl}${url}`;
 	// console.log('requestUrl+>', requestUrl);
-	// const requestUrl = uri;
+	// const requestUrl = url;
 	return axios
 		.get(requestUrl)
 		.then((response) => {
@@ -186,16 +186,16 @@ export default () => {
 	elements.formRss.addEventListener('submit', (e) => {
 		e.preventDefault();
 		const formData = new FormData(e.target);
-		const uri = formData.get('uri');
-		const error = validate(uri, state.feeds);
+		const url = formData.get('url');
+		const error = validate(url, state.feeds);
 		if (error) {
-			console.log('error_validate=>', error, ' |URL is=>', uri);
+			console.log('error_validate=>', error, ' |URL is=>', url);
 			watched.form.field.url = { error, valid: false };
 			return;
 		}
 		watched.form.field.url = { error: null, valid: true };
 		watched.form.status = 'loading';
-		getRSS(uri).then(({ err, rssElement }) => {
+		getRSS(url).then(({ err, rssElement }) => {
 			if (err) {
 				watched.form.status = 'failed';
 				watched.form.field.url = { error: err, valid: false };
@@ -203,7 +203,7 @@ export default () => {
 				const id = _.uniqueId();
 				watched.feeds.push({
 					...getTitleInfo(rssElement),
-					link: uri,
+					link: url,
 					id,
 				});
 				const newPosts = getPosts(rssElement, id);
