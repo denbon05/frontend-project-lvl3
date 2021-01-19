@@ -75,7 +75,7 @@ describe('Show errors in form', () => {
 
 		userEvent.type(elements.input, nonRssLink);
 		userEvent.click(elements.submit);
-		await waitFor(() => (elements.divErrEl = screen.getByTestId('err')));
+		await waitFor(() => (elements.divErrEl = screen.getByTestId('response')));
 		expect(
 			getByText(elements.divErrEl, new RegExp(errors.sourceWithoutRss, 'i'))
 		).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('Show errors in form', () => {
 		userEvent.type(elements.input, rssLink1);
 		userEvent.click(elements.submit);
 		await waitFor(() => expect(elements.submit).toBeEnabled());
-		elements.divErrEl = screen.getByTestId('err');
+		elements.divErrEl = screen.getByTestId('response');
 		const getMainErrText = (text) => text.slice(0, text.indexOf(':'));
 		const textDivError = getByText(
 			elements.divErrEl,

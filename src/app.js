@@ -1,36 +1,11 @@
 import _ from 'lodash';
-import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
 import initView from './view';
 import resources from './locales';
+import validate from './validator';
 
 const defaulLanguage = 'en';
-
-const validate = (url, feeds) => {
-	yup.setLocale({
-		string: {
-			url: i18next.t('errors.validURL'),
-			required: i18next.t('errors.required'),
-		},
-	});
-
-	const links = feeds.map((feed) => feed.link);
-
-	const schema = yup
-		.string()
-		.url()
-		.trim()
-		.required()
-		.notOneOf(links, () => i18next.t('errors.existRss', { url }));
-
-	try {
-		schema.validateSync(url);
-		return null;
-	} catch (err) {
-		return err.message;
-	}
-};
 
 const getTitleInfo = (rssElement) => {
 	const channelElement = rssElement.querySelector('channel');
@@ -81,31 +56,21 @@ const getPosts = (rssElement, feedId) => {
 	return makePosts(Object.values(items), feedId);
 };
 
+const parseRss = (data) => {
+	const parser = new DOMParser();
+	const parsedData = parser.parseFromString(data, 'application/xml');
+	const rssElement = parsedData.querySelector('rss');
+	if (rssElement) return Promise.resolve(rssElement);
+	return Promise.reject(i18next.t('errors.sourceWithoutRss'));
+};
+
 const getRSS = (url) => {
 	// https://api.allorigins.win/raw?url=https://example.org/
 	const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 	const requestUrl = `${proxyurl}${url}`;
 	// console.log('requestUrl+>', requestUrl);
 	// const requestUrl = url;
-	return axios
-		.get(requestUrl)
-		.then((response) => {
-			// console.log('response=>', response);
-			const { data } = response;
-			// console.log('data=>', data);
-			const parser = new DOMParser();
-			const parsedData = parser.parseFromString(data, 'application/xml');
-			// console.log('parsedData=>', JSON.stringify(parsedData, null, 2));
-			const rssElement = parsedData.querySelector('rss');
-			if (rssElement) {
-				return { err: null, rssElement };
-			}
-			return { err: i18next.t('errors.sourceWithoutRss') };
-		})
-		.catch((err) => {
-			console.log('err.message=>', err.message);
-			return { err: err.message };
-		});
+	return axios.get(requestUrl);
 };
 
 const makePostsEvents = (clickedIds) => {
@@ -118,29 +83,33 @@ const makePostsEvents = (clickedIds) => {
 	});
 };
 
-const autoupdateState = (state) => {
+const autoupdateState = (state, updateThrough = 5000) => {
 	const { form, posts, clickedPosts } = state;
 	const links = state.feeds.map(({ link, id }) => ({ link, id }));
 	links.forEach(({ link, id }) => {
-		getRSS(link).then(({ err, rssElement }) => {
-			if (err) {
-				state.netError = err;
-			} else {
-				const newPosts = getNewPosts(posts, rssElement, id);
-				if (newPosts) {
-					state.posts = {
-						allIds: newPosts.allIds.concat(posts.allIds),
-						byId: { ...posts.byId, ...newPosts.byId },
-					};
-					makePostsEvents(clickedPosts);
-				}
-				form.status = 'filling';
-			}
-		});
+		getRSS(link)
+			.then((response) =>
+				parseRss(response.data).then((rssElement) => {
+					const newPosts = getNewPosts(posts, rssElement, id);
+					if (newPosts) {
+						state.posts = {
+							allIds: newPosts.allIds.concat(posts.allIds),
+							byId: { ...posts.byId, ...newPosts.byId },
+						};
+						makePostsEvents(clickedPosts);
+					}
+					// state.error = { valid: null, error: null };
+					form.status = 'filling';
+				})
+			)
+			.catch((error) => {
+				state.error = { valid: true, error };
+				throw Error(error.message);
+			});
 	});
 	setTimeout(() => {
 		autoupdateState(state);
-	}, 5000);
+	}, updateThrough);
 };
 
 export default () => {
@@ -153,12 +122,13 @@ export default () => {
 	const state = {
 		lng: i18next.language,
 		feeds: [],
+		value: '',
 		posts: { byId: {}, allIds: [] },
 		clickedPosts: [],
-		netError: null,
+		response: { value: null, valid: null, isError: false },
 		form: {
 			status: 'filling',
-			field: {
+			fields: {
 				url: {
 					valid: true,
 					error: null,
@@ -171,9 +141,17 @@ export default () => {
 		inputRss: document.getElementById('rssInput'),
 		buttonRss: document.getElementById('buttonAdd'),
 		formRss: document.querySelector('.rss-form'),
+		responseRss: document.getElementById('response'),
+		rssContainer: document.getElementById('rssContainer'),
+		feedsContainer: document.getElementById('feedsContainer'),
+		postsContainer: document.getElementById('postsContainer'),
 	};
 
 	const watched = initView(state, elements);
+
+	elements.inputRss.addEventListener('input', ({ target: { value } }) => {
+		watched.value = value;
+	});
 
 	const lngButtons = document.getElementsByClassName('lng-btn');
 	Object.values(lngButtons).forEach((btnEl) => {
@@ -187,34 +165,60 @@ export default () => {
 		e.preventDefault();
 		const formData = new FormData(e.target);
 		const url = formData.get('url');
-		const error = validate(url, state.feeds);
-		if (error) {
-			console.log('error_validate=>', error, ' |URL is=>', url);
-			watched.form.field.url = { error, valid: false };
-			return;
-		}
-		watched.form.field.url = { error: null, valid: true };
-		watched.form.status = 'loading';
-		getRSS(url).then(({ err, rssElement }) => {
-			if (err) {
-				watched.form.status = 'failed';
-				watched.form.field.url = { error: err, valid: false };
-			} else {
-				const id = _.uniqueId();
-				watched.feeds.push({
-					...getTitleInfo(rssElement),
-					link: url,
-					id,
-				});
-				const newPosts = getPosts(rssElement, id);
-				watched.posts = {
-					allIds: newPosts.allIds.concat(state.posts.allIds),
-					byId: { ...newPosts.byId, ...state.posts.byId },
-				};
-				watched.form.status = 'filling';
-				autoupdateState(watched);
-				makePostsEvents(watched.clickedPosts);
-			}
-		});
+		const { fields } = watched.form;
+		validate(url, state.feeds)
+			.catch((error) => {
+				fields.url = { error: error.message, valid: false };
+				throw Error(error.message);
+			})
+			.then(() => {
+				watched.form.status = 'loading';
+				return getRSS(url)
+					.catch((err) => {
+						watched.form.status = 'failed';
+						watched.response = {
+							value: err.message,
+							valid: false,
+							isError: true,
+						};
+						throw Error(err.message);
+					})
+					.then((response) => {
+						const { data } = response;
+						parseRss(data)
+							.catch((message) => {
+								watched.response = {
+									value: message,
+									valid: false,
+									isError: true,
+								};
+								watched.form.status = 'failed';
+								throw Error(message);
+							})
+							.then((rssElement) => {
+								fields.url = { error: null, valid: true };
+								// console.log('rssElement=>>>', rssElement);
+								const id = _.uniqueId();
+								watched.feeds.push({
+									...getTitleInfo(rssElement),
+									link: url,
+									id,
+								});
+								const newPosts = getPosts(rssElement, id);
+								watched.posts = {
+									allIds: newPosts.allIds.concat(state.posts.allIds),
+									byId: { ...newPosts.byId, ...state.posts.byId },
+								};
+								watched.form.status = 'filling';
+								watched.response = {
+									value: i18next.t('succesText'),
+									valid: true,
+									isError: false,
+								};
+								autoupdateState(watched);
+								makePostsEvents(watched.clickedPosts);
+							});
+					});
+			});
 	});
 };

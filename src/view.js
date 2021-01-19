@@ -2,29 +2,9 @@ import i18next from 'i18next';
 import onChange from 'on-change';
 import resources from './locales';
 
-const renderDivErr = (error) => {
-	const containerInputEl = document.getElementById('containerInput');
-	const divErrEl = document.createElement('div');
-	divErrEl.id = 'err';
-	divErrEl.dataset.testid = 'err';
-	divErrEl.textContent = error;
-	divErrEl.className = 'text-danger';
-	containerInputEl.appendChild(divErrEl);
-};
-
-const onError = (error = null) => {
-	const inputEl = document.getElementById('rssInput');
-	const errEl = document.getElementById('err');
-	if (!error) inputEl.classList.remove('is-invalid');
-	if (errEl) errEl.remove();
-	if (error) {
-		inputEl.classList.add('is-invalid');
-		renderDivErr(error);
-	}
-};
-
-const renderNetError = (err) => {
-	renderDivErr(err);
+const typing = ({ inputRss, responseRss }) => {
+	inputRss.className = 'form-control form-control-lg w-80';
+	responseRss.textContent = '';
 };
 
 const renderTemplateText = () => {
@@ -53,28 +33,46 @@ const renderSwitchLngButton = (lng = 'en') => {
 	renderTemplateText();
 };
 
-const rederForm = (status) => {
-	const buttonEl = document.getElementById('buttonAdd');
-	const inputEl = document.getElementById('rssInput');
-	onError(false);
+const rederForm = (status, { buttonRss, inputRss, responseRss }) => {
+	// onError(false);
 	switch (status) {
 		case 'filling':
-			inputEl.value = '';
-			buttonEl.disabled = false;
+			inputRss.readOnly = false;
+			inputRss.value = '';
+			buttonRss.disabled = false;
 			return;
 		case 'loading':
-			buttonEl.disabled = true;
+			inputRss.readOnly = true;
+			buttonRss.disabled = true;
+			responseRss.textContent = '';
 			return;
 		case 'failed':
-			buttonEl.disabled = false;
+			inputRss.readOnly = false;
+			buttonRss.disabled = false;
 			return;
 		default:
 			throw Error(`Unknow form status: "${status}"`);
 	}
 };
 
-const renderError = ({ error, valid }) => {
-	if (!valid) onError(error);
+const renderResponse = (
+	{ value, valid, isError = true },
+	{ responseRss, inputRss }
+) => {
+	// if (valid === null) return;
+	inputRss.className = 'form-control form-control-lg w-80';
+	responseRss.className = '';
+	responseRss.textContent = '';
+	if (isError) {
+		responseRss.classList.add('text-danger');
+		responseRss.textContent = value;
+	}
+	if (!valid) inputRss.classList.add('is-invalid');
+	if (!isError && valid) {
+		inputRss.classList.add('is-valid');
+		responseRss.textContent = value;
+		responseRss.classList.add('text-success');
+	}
 };
 
 const closeBtn = (modalEl, bgEl) => {
@@ -90,7 +88,6 @@ const addAttributes = (modalEl, bgFadeEl) => {
 	modalEl.removeAttribute('aria-hiden');
 	modalEl.setAttribute('style', 'display: block; padding-right: 15px;');
 	modalEl.setAttribute('aria-modal', 'true');
-	// bgFadeEl.className = 'modal-backdrop fade show';
 	document.body.appendChild(bgFadeEl).className = 'modal-backdrop fade show';
 };
 
@@ -141,59 +138,45 @@ const makePostsEvents = ({ byId }) => {
 	});
 };
 
-const renderFeeds = (feedsColl) => {
-	const rssContainer = document.getElementById('rssContainer');
-	const feedsEl = document.getElementById('feedsRow');
-	if (feedsEl) feedsEl.remove();
-	const feedsRow = document.createElement('div');
-	feedsRow.id = 'feedsRow';
-	feedsRow.className = 'row';
-	const feedsCol = document.createElement('div');
-	feedsCol.className = 'col-md-10 col-lg-8 mx-auto feeds';
-	feedsCol.innerHTML = `<h2>${i18next.t('feedsTitle')}</h2>`;
-	const feedsList = document.createElement('ul');
-	feedsList.className = 'list-group mb-5';
-	rssContainer.appendChild(feedsRow);
-	feedsRow.appendChild(feedsCol);
-	feedsCol.appendChild(feedsList);
-	feedsList.innerHTML = feedsColl
-		.map(
-			({ title, description }) =>
-				`<li class="list-group-item"><h3>${title}</h3><p>${description}</p></li>`
-		)
-		.join('');
+const renderFeeds = (feedsColl, feedsContainer) => {
+	const feedsCol = feedsContainer.firstElementChild;
+	feedsCol.innerHTML = [
+		`<h2>${i18next.t('feedsTitle')}</h2>`,
+		'<ul class="list-group mb-5">',
+		`${feedsColl
+			.map(({ title, description }) =>
+				[
+					'<li class="list-group-item">',
+					`<h3>${title}</h3>`,
+					`<p>${description}</p></li>`,
+				].join('')
+			)
+			.join('')}`,
+		'</ul >',
+	].join('');
 };
 
-const renderPosts = (postsColl, clickedPosts) => {
+const renderPosts = (postsColl, clickedPosts, postsContainer) => {
 	const { allIds, byId } = postsColl;
-	const rssContainer = document.getElementById('rssContainer');
-	const postsEl = document.getElementById('postsRow');
-	if (postsEl) postsEl.remove();
-	const postsRow = document.createElement('div');
-	postsRow.className = 'row';
-	postsRow.id = 'postsRow';
-	const postsCol = document.createElement('div');
-	postsCol.className = 'col-md-10 col-lg-8 mx-auto posts';
-	postsCol.innerHTML = `<h2>${i18next.t('postsTitle')}</h2>`;
-	const postsList = document.createElement('ul');
-	postsList.className = 'list-group mb-5';
-	rssContainer
-		.appendChild(postsRow)
-		.appendChild(postsCol)
-		.appendChild(postsList);
-	postsList.innerHTML = allIds
-		.map((id) => {
-			const { title, link } = byId[id];
-			return [
-				'<li class="list-group-item d-flex justify-content-between align-items-start">',
-				`<a href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a >`,
-				`<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="prewiew" data-toggle="modal" data-target="#modal">${i18next.t(
-					'postsButtonPreview'
-				)}</button>`,
-				'</li>',
-			].join('');
-		})
-		.join('');
+	const postsCol = postsContainer.firstElementChild;
+	postsCol.innerHTML = [
+		`<h2>${i18next.t('postsTitle')}</h2>`,
+		'<ul class="list-group mb-5">',
+		`${allIds
+			.map((id) => {
+				const { title, link } = byId[id];
+				return [
+					'<li class="list-group-item d-flex justify-content-between align-items-start">',
+					`<a href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
+					`<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="prewiew" data-toggle="modal" data-target="#modal">${i18next.t(
+						'postsButtonPreview'
+					)}</button>`,
+					'</li>',
+				].join('');
+			})
+			.join('')}`,
+		'</ul>',
+	].join('');
 	makePostsEvents(postsColl);
 	renderClickedLinks(clickedPosts);
 };
@@ -202,18 +185,20 @@ export default (state, elements) => {
 	elements.inputRss.focus();
 
 	const mapping = {
-		'form.status': (status) => rederForm(status),
-		'form.field.url': (value) => renderError(value),
-		netError: (err) => renderNetError(err),
-		feeds: (feedsColl) => renderFeeds(feedsColl),
-		posts: (postsColl) => renderPosts(postsColl, state.clickedPosts),
+		value: () => typing(elements),
+		'form.status': (status) => rederForm(status, elements),
+		'form.fields.url': (value) => renderResponse(value, elements),
+		response: (res) => renderResponse(res, elements),
+		feeds: (feedsColl) => renderFeeds(feedsColl, elements.feedsContainer),
+		posts: (postsColl) =>
+			renderPosts(postsColl, state.clickedPosts, elements.postsContainer),
 		lng: (language) => renderSwitchLngButton(language),
 		clickedPosts: (ids) => renderClickedLinks(ids),
 	};
 
 	const watchedState = onChange(state, (path, value) => {
-		// console.log('path=>', path);
-		// console.log('value=>', value);
+		console.log('path=>', path);
+		console.log('value=>', value);
 		if (mapping[path]) {
 			mapping[path](value);
 		}
