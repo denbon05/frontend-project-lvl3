@@ -84,13 +84,14 @@ describe('Show errors in form', () => {
 		userEvent.type(elements.input, rssLink1);
 		expect(elements.submit).toBeEnabled();
 		userEvent.click(elements.submit);
-		await waitFor(() => expect(elements.submit).toBeDisabled());
+		expect(elements.submit).toBeDisabled();
 
 		await waitFor(() => expect(elements.submit).toBeEnabled());
 		expect(elements.input.value).toBe('');
 
 		userEvent.type(elements.input, rssLink1);
 		userEvent.click(elements.submit);
+		expect(elements.submit).toBeDisabled();
 		await waitFor(() => expect(elements.submit).toBeEnabled());
 		const container = document.getElementById('response');
 		expect(
@@ -106,6 +107,7 @@ describe('Show errors in form', () => {
 
 		userEvent.type(elements.input, rssLink1);
 		userEvent.click(elements.submit);
+		expect(elements.input).toHaveAttribute('readonly');
 
 		expect(
 			await screen.findByText(/Фото — Рамблер\/новости/i)
@@ -162,12 +164,9 @@ test('Show modal', async () => {
 	applyNock(rssLink2, rss2);
 	userEvent.type(elements.input, rssLink2);
 	userEvent.click(elements.submit);
-	let previewBtns;
-	await waitFor(() => {
-		previewBtns = screen.getAllByTestId('prewiew');
-		expect(previewBtns).toBeInstanceOf(Array);
-	});
+	const previewBtns = await screen.findAllByRole('button', { name: /preview/i });
 	// @ts-ignore
+	expect(screen.getByRole('link', { name: /Sigma z rekordowym wzrostem sprzedaży/i })).toHaveClass('font-weight-bold');
 	userEvent.click(previewBtns[1]);
 	expect(await screen.findByText('Full article')).toBeVisible();
 	const closeBtn = screen.getByText('Close');

@@ -36,17 +36,17 @@ const renderSwitchLngButton = (lng = 'en') => {
 const rederForm = (status, { buttonRss, inputRss, responseRss }) => {
 	switch (status) {
 		case 'filling':
-			inputRss.readOnly = false;
+			inputRss.removeAttribute('readonly');
 			inputRss.value = '';
 			buttonRss.disabled = false;
 			return;
 		case 'loading':
-			inputRss.readOnly = true;
+			inputRss.setAttribute('readonly', true);
 			buttonRss.disabled = true;
 			responseRss.textContent = '';
 			return;
 		case 'failed':
-			inputRss.readOnly = false;
+			inputRss.removeAttribute('readonly');
 			buttonRss.disabled = false;
 			return;
 		default:
@@ -162,8 +162,8 @@ const renderPosts = (postsColl, clickedPosts, postsContainer) => {
 				const { title, link } = byId[id];
 				return [
 					'<li class="list-group-item d-flex justify-content-between align-items-start">',
-					`<a href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
-					`<button type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="prewiew" data-toggle="modal" data-target="#modal">${i18next.t(
+					`<a role="link" href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
+					`<button role="button" type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="prewiew" data-toggle="modal" data-target="#modal">${i18next.t(
 						'postsButtonPreview'
 					)}</button>`,
 					'</li>',

@@ -101,9 +101,9 @@ const autoupdateState = (state, updateThrough = 5000) => {
 					form.status = 'filling';
 				},
 				(error) => {
-					console.log('in-autoupdate-error=>', error);
+					// console.log('in-autoupdate-error=>', error);
 					form.fields.url = { valid: true, error };
-					Promise.reject(error);
+					return Promise.reject(error);
 				}
 			)
 		);
@@ -163,18 +163,16 @@ export default () => {
 
 	elements.formRss.addEventListener('submit', (e) => {
 		e.preventDefault();
+		watched.form.status = 'loading';
 		const formData = new FormData(e.target);
 		const url = formData.get('url');
 		const { fields } = watched.form;
 		validate(url, state.feeds)
 			.then(
 				() => {
-					watched.form.status = 'loading';
 					return getRSS(url);
 				},
-				(err) => 
-					// console.log('1-err->', err);
-					 Promise.reject(err)
+				(err) => Promise.reject(err)
 				
 			)
 			.then(
@@ -182,10 +180,7 @@ export default () => {
 					const { data } = response;
 					return parseRss(data);
 				},
-				(err) => 
-					// console.log('2-err->', err);
-					 Promise.reject(err)
-				
+				(err) => Promise.reject(err)
 			)
 			.then(
 				(rssElement) => {
@@ -207,10 +202,7 @@ export default () => {
 					makePostsEvents(watched.clickedPosts);
 					return autoupdateState(watched);
 				},
-				(err) => 
-					// console.log('3-err->', err);
-					 Promise.reject(err)
-				
+				(err) => Promise.reject(err)
 			)
 			.catch((err) => {
 				// console.log('MAIN-err-message->', err.message);
