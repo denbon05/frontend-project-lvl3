@@ -61,7 +61,7 @@ const parseRss = (data) => {
 	const parsedData = parser.parseFromString(data, 'application/xml');
 	const rssElement = parsedData.querySelector('rss');
 	if (rssElement) return Promise.resolve(rssElement);
-	return Promise.reject(i18next.t('errors.sourceWithoutRss'));
+	throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
 const getRSS = (url) => {
@@ -87,9 +87,9 @@ const autoupdateState = (state, updateThrough = 5000) => {
 	const { form, posts, clickedPosts } = state;
 	const links = state.feeds.map(({ link, id }) => ({ link, id }));
 	links.forEach(({ link, id }) => {
-		getRSS(link)
-			.then((response) =>
-				parseRss(response.data).then((rssElement) => {
+		getRSS(link).then((response) =>
+			parseRss(response.data).then(
+				(rssElement) => {
 					const newPosts = getNewPosts(posts, rssElement, id);
 					if (newPosts) {
 						state.posts = {
@@ -98,14 +98,15 @@ const autoupdateState = (state, updateThrough = 5000) => {
 						};
 						makePostsEvents(clickedPosts);
 					}
-					// state.error = { valid: null, error: null };
 					form.status = 'filling';
-				})
+				},
+				(error) => {
+					console.log('in-autoupdate-error=>', error);
+					form.fields.url = { valid: true, error };
+					Promise.reject(error);
+				}
 			)
-			.catch((error) => {
-				state.error = { valid: true, error };
-				throw Error(error.message);
-			});
+		);
 	});
 	setTimeout(() => {
 		autoupdateState(state);
@@ -115,7 +116,7 @@ const autoupdateState = (state, updateThrough = 5000) => {
 export default () => {
 	i18next.init({
 		lng: defaulLanguage,
-		debug: true,
+		// debug: true,
 		resources,
 	});
 
@@ -125,7 +126,6 @@ export default () => {
 		value: '',
 		posts: { byId: {}, allIds: [] },
 		clickedPosts: [],
-		response: { value: null, valid: null, isError: false },
 		form: {
 			status: 'filling',
 			fields: {
@@ -167,58 +167,55 @@ export default () => {
 		const url = formData.get('url');
 		const { fields } = watched.form;
 		validate(url, state.feeds)
-			.catch((error) => {
-				fields.url = { error: error.message, valid: false };
-				throw Error(error.message);
-			})
-			.then(() => {
-				watched.form.status = 'loading';
-				return getRSS(url)
-					.catch((err) => {
-						watched.form.status = 'failed';
-						watched.response = {
-							value: err.message,
-							valid: false,
-							isError: true,
-						};
-						throw Error(err.message);
-					})
-					.then((response) => {
-						const { data } = response;
-						parseRss(data)
-							.catch((message) => {
-								watched.response = {
-									value: message,
-									valid: false,
-									isError: true,
-								};
-								watched.form.status = 'failed';
-								throw Error(message);
-							})
-							.then((rssElement) => {
-								fields.url = { error: null, valid: true };
-								// console.log('rssElement=>>>', rssElement);
-								const id = _.uniqueId();
-								watched.feeds.push({
-									...getTitleInfo(rssElement),
-									link: url,
-									id,
-								});
-								const newPosts = getPosts(rssElement, id);
-								watched.posts = {
-									allIds: newPosts.allIds.concat(state.posts.allIds),
-									byId: { ...newPosts.byId, ...state.posts.byId },
-								};
-								watched.form.status = 'filling';
-								watched.response = {
-									value: i18next.t('succesText'),
-									valid: true,
-									isError: false,
-								};
-								autoupdateState(watched);
-								makePostsEvents(watched.clickedPosts);
-							});
+			.then(
+				() => {
+					watched.form.status = 'loading';
+					return getRSS(url);
+				},
+				(err) => 
+					// console.log('1-err->', err);
+					 Promise.reject(err)
+				
+			)
+			.then(
+				(response) => {
+					const { data } = response;
+					return parseRss(data);
+				},
+				(err) => 
+					// console.log('2-err->', err);
+					 Promise.reject(err)
+				
+			)
+			.then(
+				(rssElement) => {
+					fields.url = { error: null, valid: true };
+					// console.log('rssElement=>>>', rssElement);
+					const id = _.uniqueId();
+					watched.feeds.push({
+						...getTitleInfo(rssElement),
+						link: url,
+						id,
 					});
+					const newPosts = getPosts(rssElement, id);
+					watched.posts = {
+						allIds: newPosts.allIds.concat(state.posts.allIds),
+						byId: { ...newPosts.byId, ...state.posts.byId },
+					};
+					watched.form.status = 'filling';
+					fields.url = { error: null, valid: true };
+					makePostsEvents(watched.clickedPosts);
+					return autoupdateState(watched);
+				},
+				(err) => 
+					// console.log('3-err->', err);
+					 Promise.reject(err)
+				
+			)
+			.catch((err) => {
+				// console.log('MAIN-err-message->', err.message);
+				fields.url = { error: err.message, valid: false };
+				watched.form.status = 'failed';
 			});
 	});
 };

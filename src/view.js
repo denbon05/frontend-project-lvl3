@@ -34,7 +34,6 @@ const renderSwitchLngButton = (lng = 'en') => {
 };
 
 const rederForm = (status, { buttonRss, inputRss, responseRss }) => {
-	// onError(false);
 	switch (status) {
 		case 'filling':
 			inputRss.readOnly = false;
@@ -55,22 +54,18 @@ const rederForm = (status, { buttonRss, inputRss, responseRss }) => {
 	}
 };
 
-const renderResponse = (
-	{ value, valid, isError = true },
-	{ responseRss, inputRss }
-) => {
-	// if (valid === null) return;
+const renderResponse = ({ error, valid }, { responseRss, inputRss }) => {
 	inputRss.className = 'form-control form-control-lg w-80';
 	responseRss.className = '';
 	responseRss.textContent = '';
-	if (isError) {
+	if (error) {
 		responseRss.classList.add('text-danger');
-		responseRss.textContent = value;
+		responseRss.textContent = error;
 	}
 	if (!valid) inputRss.classList.add('is-invalid');
-	if (!isError && valid) {
+	if (!error && valid) {
 		inputRss.classList.add('is-valid');
-		responseRss.textContent = value;
+		responseRss.textContent = i18next.t('succesText');
 		responseRss.classList.add('text-success');
 	}
 };
@@ -188,7 +183,6 @@ export default (state, elements) => {
 		value: () => typing(elements),
 		'form.status': (status) => rederForm(status, elements),
 		'form.fields.url': (value) => renderResponse(value, elements),
-		response: (res) => renderResponse(res, elements),
 		feeds: (feedsColl) => renderFeeds(feedsColl, elements.feedsContainer),
 		posts: (postsColl) =>
 			renderPosts(postsColl, state.clickedPosts, elements.postsContainer),
@@ -197,8 +191,8 @@ export default (state, elements) => {
 	};
 
 	const watchedState = onChange(state, (path, value) => {
-		console.log('path=>', path);
-		console.log('value=>', value);
+		// console.log('path=>', path);
+		// console.log('value=>', value);
 		if (mapping[path]) {
 			mapping[path](value);
 		}

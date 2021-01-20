@@ -5,7 +5,7 @@
 import '@testing-library/jest-dom';
 import fs from 'fs';
 import path from 'path';
-import { screen, waitFor, getByText } from '@testing-library/dom';
+import { screen, waitFor, getByText, findByText } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import nock from 'nock';
 import axios from 'axios';
@@ -45,18 +45,12 @@ beforeEach(async () => {
 	const html = fs.readFileSync(pathToHtml, 'utf-8');
 	document.body.innerHTML = html;
 
-	elements.input = screen.getByTestId('rssInput');
-	elements.submit = screen.getByTestId('buttonAdd');
+	elements.input = screen.getByRole('textbox', { name: 'url' });
+	elements.submit = screen.getByRole('button', { name: 'add' });
+	elements.responseEl = screen.getByRole('doc-noteref');
+	// elements.languageBtns = screen.getByRole('group');
 
 	app();
-});
-
-test('Test by role and name "textbox, {name: url}"', () => {
-	elements.input = screen.getByRole('textbox', { name: 'url' });
-});
-
-test('Test by role and name "button, {name: add}"', () => {
-	elements.submit = screen.getByRole('button', { name: 'add' });
 });
 
 describe('Show errors in form', () => {
@@ -65,9 +59,11 @@ describe('Show errors in form', () => {
 	test('Validation: URL', async () => {
 		userEvent.type(elements.input, 'not_url');
 		userEvent.click(elements.submit);
-		expect(
-			screen.getByText(new RegExp(errors.validURL, 'i'))
-		).toBeInTheDocument();
+		await waitFor(() =>
+			expect(
+				screen.getByText(new RegExp(errors.validURL, 'i'))
+			).toBeInTheDocument()
+		);
 	});
 
 	test('Validation: incorect RSS link', async () => {
@@ -75,10 +71,11 @@ describe('Show errors in form', () => {
 
 		userEvent.type(elements.input, nonRssLink);
 		userEvent.click(elements.submit);
-		await waitFor(() => (elements.divErrEl = screen.getByTestId('response')));
-		expect(
-			getByText(elements.divErrEl, new RegExp(errors.sourceWithoutRss, 'i'))
-		).toBeInTheDocument();
+		await waitFor(() =>
+			expect(
+				getByText(elements.responseEl, new RegExp(errors.sourceWithoutRss, 'i'))
+			).toBeInTheDocument()
+		);
 	});
 
 	test('Validation: RSS feed already exist & check disable button', async () => {
@@ -87,7 +84,7 @@ describe('Show errors in form', () => {
 		userEvent.type(elements.input, rssLink1);
 		expect(elements.submit).toBeEnabled();
 		userEvent.click(elements.submit);
-		expect(elements.submit).toBeDisabled();
+		await waitFor(() => expect(elements.submit).toBeDisabled());
 
 		await waitFor(() => expect(elements.submit).toBeEnabled());
 		expect(elements.input.value).toBe('');
@@ -95,53 +92,85 @@ describe('Show errors in form', () => {
 		userEvent.type(elements.input, rssLink1);
 		userEvent.click(elements.submit);
 		await waitFor(() => expect(elements.submit).toBeEnabled());
-		elements.divErrEl = screen.getByTestId('response');
-		const getMainErrText = (text) => text.slice(0, text.indexOf(':'));
-		const textDivError = getByText(
-			elements.divErrEl,
-			() =>
-				getMainErrText(elements.divErrEl.textContent) ===
-				getMainErrText(errors.existRss)
-		);
-		expect(textDivError).toBeInTheDocument();
+		const container = document.getElementById('response');
+		expect(
+			await findByText(container, errors.existRss.split(':')[0], {
+				exact: false,
+			})
+		).toBeVisible();
+	});
+
+	test('RSS feeds add', async () => {
+		applyNock(rssLink1, rss1);
+		applyNock(rssLink2, rss2);
+
+		userEvent.type(elements.input, rssLink1);
+		userEvent.click(elements.submit);
+
+		expect(
+			await screen.findByText(/Фото — Рамблер\/новости/i)
+		).toBeInTheDocument();
+		expect(
+			await screen.findByText(/В аэропорту Йемена прогремел мощный взрыв/i)
+		).toBeInTheDocument();
+
+		userEvent.type(elements.input, rssLink2);
+		userEvent.click(elements.submit);
+		expect(
+			await screen.findByText(/www\.cire\.pl - Wiadomości - kraj/i)
+		).toBeInTheDocument();
+		expect(
+			await screen.findByText(/CIRE\.pl - Centrum Informacji o Rynku Energii/i)
+		).toBeInTheDocument();
+	});
+
+	test('Clicked links', async () => {
+		applyNock(rssLink2, rss2);
+
+		userEvent.type(elements.input, rssLink2);
+		userEvent.click(elements.submit);
+
+		const postLinks = await screen.findAllByTestId('post-link');
+		expect(postLinks[2]).toHaveClass('font-weight-bold');
+		userEvent.click(postLinks[2]);
+		const updatedPostLinks = await screen.findAllByTestId('post-link');
+		expect(updatedPostLinks[2]).not.toHaveClass('font-weight-bold');
+		expect(updatedPostLinks[2]).toHaveClass('font-weight-normal');
+		expect(updatedPostLinks[1]).toHaveClass('post-link font-weight-bold');
 	});
 });
 
-test('RSS feeds add', async () => {
+test('Switch language to Poland', async () => {
 	applyNock(rssLink1, rss1);
-	applyNock(rssLink2, rss2);
-
+	const btnsContainer = document.getElementById('switchLng');
+	const plBtn = await findByText(btnsContainer, 'pl');
+	expect(plBtn).toBeInTheDocument();
+	userEvent.click(plBtn);
+	const translation = getTranslationByLng(pl);
+	expect(
+		await screen.findByText(translation.form.mainTitle)
+	).toBeInTheDocument();
+	expect(
+		await screen.findByText(translation.form.formLead)
+	).toBeInTheDocument();
 	userEvent.type(elements.input, rssLink1);
 	userEvent.click(elements.submit);
-
-	expect(
-		await screen.findByText(/Фото — Рамблер\/новости/i)
-	).toBeInTheDocument();
-	expect(
-		await screen.findByText(/В аэропорту Йемена прогремел мощный взрыв/i)
-	).toBeInTheDocument();
-
-	userEvent.type(elements.input, rssLink2);
-	userEvent.click(elements.submit);
-	expect(
-		await screen.findByText(/www\.cire\.pl - Wiadomości - kraj/i)
-	).toBeInTheDocument();
-	expect(
-		await screen.findByText(/CIRE\.pl - Centrum Informacji o Rynku Energii/i)
-	).toBeInTheDocument();
+	expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
 });
 
-test('Clicked links', async () => {
+test('Show modal', async () => {
 	applyNock(rssLink2, rss2);
-
 	userEvent.type(elements.input, rssLink2);
 	userEvent.click(elements.submit);
-
-	const postLinks = await screen.findAllByTestId('post-link');
-	expect(postLinks[2]).toHaveClass('font-weight-bold');
-	userEvent.click(postLinks[2]);
-	const updatedPostLinks = await screen.findAllByTestId('post-link');
-	expect(updatedPostLinks[2]).not.toHaveClass('font-weight-bold');
-	expect(updatedPostLinks[2]).toHaveClass('font-weight-normal');
-	expect(updatedPostLinks[1]).toHaveClass('post-link font-weight-bold');
+	let previewBtns;
+	await waitFor(() => {
+		previewBtns = screen.getAllByTestId('prewiew');
+		expect(previewBtns).toBeInstanceOf(Array);
+	});
+	// @ts-ignore
+	userEvent.click(previewBtns[1]);
+	expect(await screen.findByText('Full article')).toBeVisible();
+	const closeBtn = screen.getByText('Close');
+	userEvent.click(closeBtn);
+	expect(await screen.findByText('Full article')).not.toBeVisible();
 });
