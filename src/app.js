@@ -64,23 +64,32 @@ const parseRss = (data) => {
 	throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
-const getRSS = async (url) => {
-	// console.log('url=>>>', url);
+const getRSS = (baseURL) => {
+	// console.log('baseURL=>>>', baseURL);
 	// https://api.allorigins.win/raw?url=https://example.org/
 	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 	const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
-	// const requestUrl = `${proxyurl}${url}`;
+	// const requestUrl = `${proxyurl}${baseURL}`;
 	// console.log('requestUrl+>', requestUrl);
-	// const requestUrl = url;
+	// const requestUrl = baseURL;
 	// return axios.get(requestUrl);
-	const uri = new URL(url, proxyurl);
+	const uri = new URL(baseURL, proxyurl);
 	// console.log('uri=>', uri);
-	return await axios.get(url, {
+	// const config = {
+	// 	baseURL,
+	// 	proxy: proxyurl
+	// }
+	// const proxiedURL = `${proxyurl}get?url=${encodeURIComponent(baseURL)}`;
+	return axios.request({
+		method: 'get',
+		baseURL,
 		proxy: {
-			host: uri.host,
 			protocol: uri.protocol,
-		}
+			host: uri.host,
+			port: 9000,
+		},
 	});
+	// return axios.get(proxiedURL);
 };
 
 const makePostsEvents = (clickedIds) => {
