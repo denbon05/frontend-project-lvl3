@@ -24,6 +24,7 @@ const readFile = (filename) => fs.readFileSync(getPath(filename), 'utf-8');
 nock.disableNetConnect();
 
 // const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+// axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
 const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
 const { en, pl } = resources;
 const rss1 = readFile('1.rss');
@@ -47,7 +48,6 @@ beforeEach(async () => {
 	elements.input = screen.getByRole('textbox', { name: 'url' });
 	elements.submit = screen.getByRole('button', { name: 'add' });
 	elements.responseEl = screen.getByRole('doc-noteref');
-	// elements.languageBtns = screen.getByRole('group');
 
 	app();
 });
