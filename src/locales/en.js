@@ -13,7 +13,7 @@ export default {
 			oppenLinkButton: 'Full article',
 			closeModalButton: 'Close',
 		},
-		succesText: 'Rss has been loaded!',
+		succesText: 'Rss has been loaded',
 		errors: {
 			validURL: 'Must be valid url',
 			required: 'this field is required',
