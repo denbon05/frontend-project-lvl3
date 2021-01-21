@@ -65,12 +65,21 @@ const parseRss = (data) => {
 };
 
 const getRSS = (url) => {
+	console.log('url=>>>', url);
 	// https://api.allorigins.win/raw?url=https://example.org/
-	const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-	const requestUrl = `${proxyurl}${url}`;
+	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+	const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
+	// const requestUrl = `${proxyurl}${url}`;
 	// console.log('requestUrl+>', requestUrl);
 	// const requestUrl = url;
-	return axios.get(requestUrl);
+	// return axios.get(requestUrl);
+	const uri = new URL(url, proxyurl);
+	return axios.get(url, {
+		// headers: { "Access-Control-Allow-Origin": "*" },
+		proxy: {
+			host: uri.host,
+		}
+	});
 };
 
 const makePostsEvents = (clickedIds) => {
@@ -101,7 +110,6 @@ const autoupdateState = (state, updateThrough = 5000) => {
 					form.status = 'filling';
 				},
 				(error) => {
-					// console.log('in-autoupdate-error=>', error);
 					form.fields.url = { valid: true, error };
 					return Promise.reject(error);
 				}
@@ -169,11 +177,8 @@ export default () => {
 		const { fields } = watched.form;
 		validate(url, state.feeds)
 			.then(
-				() => {
-					return getRSS(url);
-				},
+				() => getRSS(url),
 				(err) => Promise.reject(err)
-				
 			)
 			.then(
 				(response) => {

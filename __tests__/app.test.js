@@ -1,6 +1,4 @@
 // @ts-check
-/* eslint import/no-extraneous-dependencies: 0  */
-/* eslint-disable */
 
 import '@testing-library/jest-dom';
 import fs from 'fs';
@@ -109,6 +107,7 @@ describe('Show errors in form', () => {
 		userEvent.click(elements.submit);
 		expect(elements.input).toHaveAttribute('readonly');
 
+		expect(await screen.findByText(/Rss has been loaded/i)).toBeInTheDocument();
 		expect(
 			await screen.findByText(/Фото — Рамблер\/новости/i)
 		).toBeInTheDocument();
@@ -164,9 +163,12 @@ test('Show modal', async () => {
 	applyNock(rssLink2, rss2);
 	userEvent.type(elements.input, rssLink2);
 	userEvent.click(elements.submit);
-	const previewBtns = await screen.findAllByRole('button', { name: /preview/i });
-	// @ts-ignore
-	expect(screen.getByRole('link', { name: /Sigma z rekordowym wzrostem sprzedaży/i })).toHaveClass('font-weight-bold');
+	const previewBtns = await screen.findAllByRole('button', {
+		name: /preview/i,
+	});
+	expect(
+		screen.getByRole('link', { name: /Sigma z rekordowym wzrostem sprzedaży/i })
+	).toHaveClass('font-weight-bold');
 	userEvent.click(previewBtns[1]);
 	expect(await screen.findByText('Full article')).toBeVisible();
 	const closeBtn = screen.getByText('Close');
