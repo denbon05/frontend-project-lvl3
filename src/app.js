@@ -64,7 +64,34 @@ const parseRss = (data) => {
 	throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
-const getRSS = (baseURL) => axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
+const getRSS = (baseURL) => {
+	// console.log('baseURL=>>>', baseURL);
+	// https://api.allorigins.win/raw?url=https://example.org/
+	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+	// const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
+	return axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${baseURL}`);
+	// const requestUrl = `${proxyurl}${baseURL}`;
+	// console.log('requestUrl+>', requestUrl);
+	// const requestUrl = baseURL;
+	// return axios.get(requestUrl);
+	// const uri = new URL(baseURL, proxyurl);
+	// console.log('uri=>', uri);
+	// const config = {
+	// 	baseURL,
+	// 	proxy: proxyurl
+	// }
+	// const proxiedURL = `${proxyurl}get?url=${encodeURIComponent(baseURL)}`;
+	// return axios.request({
+	// 	method: 'get',
+	// 	baseURL,
+	// 	proxy: {
+	// 		protocol: uri.protocol,
+	// 		host: uri.host,
+	// 		port: 9000,
+	// 	},
+	// });
+	// return axios.get(proxiedURL);
+};
 
 const makePostsEvents = (clickedIds) => {
 	const postsLinksEl = document.getElementsByClassName('post-link');
