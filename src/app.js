@@ -64,8 +64,8 @@ const parseRss = (data) => {
 	throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
-const getRSS = (url) => {
-	console.log('url=>>>', url);
+const getRSS = async (url) => {
+	// console.log('url=>>>', url);
 	// https://api.allorigins.win/raw?url=https://example.org/
 	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 	const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
@@ -74,10 +74,11 @@ const getRSS = (url) => {
 	// const requestUrl = url;
 	// return axios.get(requestUrl);
 	const uri = new URL(url, proxyurl);
-	return axios.get(url, {
-		// headers: { "Access-Control-Allow-Origin": "*" },
+	// console.log('uri=>', uri);
+	return await axios.get(url, {
 		proxy: {
 			host: uri.host,
+			protocol: uri.protocol,
 		}
 	});
 };
