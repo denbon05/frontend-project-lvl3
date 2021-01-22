@@ -56,41 +56,31 @@ const getPosts = (rssElement, feedId) => {
 	return makePosts(Object.values(items), feedId);
 };
 
-const parseRss = (data) => {
+const parseRss = (data) => { // if change proxy from hexlet-allorigins then only data transmitted to parseFrom
+	// console.log('data=>>', data);
 	const parser = new DOMParser();
-	const parsedData = parser.parseFromString(data.contents, 'application/xml');
+	const parsedData = parser.parseFromString(data, 'application/xml');
 	const rssElement = parsedData.querySelector('rss');
 	if (rssElement) return Promise.resolve(rssElement);
 	throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
-const getRSS = (baseURL) => {
-	// console.log('baseURL=>>>', baseURL);
-	// https://api.allorigins.win/raw?url=https://example.org/
-	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+const getRSS = (baseURL) => { // if change proxy from hexlet-allorigins then only data transmitted to parseFrom in parseRss
+	const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 	// const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
-	return axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${baseURL}`);
-	// const requestUrl = `${proxyurl}${baseURL}`;
-	// console.log('requestUrl+>', requestUrl);
-	// const requestUrl = baseURL;
-	// return axios.get(requestUrl);
+	// const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
 	// const uri = new URL(baseURL, proxyurl);
-	// console.log('uri=>', uri);
-	// const config = {
-	// 	baseURL,
-	// 	proxy: proxyurl
-	// }
-	// const proxiedURL = `${proxyurl}get?url=${encodeURIComponent(baseURL)}`;
 	// return axios.request({
-	// 	method: 'get',
-	// 	baseURL,
-	// 	proxy: {
-	// 		protocol: uri.protocol,
-	// 		host: uri.host,
-	// 		port: 9000,
-	// 	},
-	// });
-	// return axios.get(proxiedURL);
+  //   url: baseURL,
+  //   proxy: {
+  //     host: uri.host,
+  //     protocol: uri.protocol,
+  //   },
+  // });
+	// const res = axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
+	// return res;
+	const requestUrl = `${proxyurl}${baseURL}`;
+	return axios.get(requestUrl);
 };
 
 const makePostsEvents = (clickedIds) => {
