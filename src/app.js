@@ -59,16 +59,15 @@ const getPosts = (rssElement, feedId) => {
 const parseRss = (data) => { // if change proxy from hexlet-allorigins then only data transmitted to parseFrom
 	// console.log('data=>>', data);
 	const parser = new DOMParser();
-	const parsedData = parser.parseFromString(data, 'application/xml');
+	const parsedData = parser.parseFromString(data.contents, 'application/xml');
 	const rssElement = parsedData.querySelector('rss');
 	if (rssElement) return Promise.resolve(rssElement);
 	throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
 const getRSS = (baseURL) => { // if change proxy from hexlet-allorigins then only data transmitted to parseFrom in parseRss
-	const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-	// const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
-	// const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
+	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+	const proxyurl = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 	// const uri = new URL(baseURL, proxyurl);
 	// return axios.request({
   //   url: baseURL,
