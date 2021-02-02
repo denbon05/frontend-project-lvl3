@@ -4,7 +4,7 @@ export default {
 			mainTitle: 'RSS Reader',
 			formLead: 'Start reading RSS today! It is easy, it is nicely.',
 			buttonAdd: 'Add',
-			example: 'Example: http://lorem-rss.herokuapp.com/feed',
+			example: 'Example: https://www.polsatnews.pl/rss/swiat.xml',
 		},
 		postsButtonPreview: 'Preview',
 		feedsTitle: 'Feeds',

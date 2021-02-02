@@ -12,9 +12,6 @@ build:
 test:
 	npm test
 
-dev:
-	npm run start:dev
-
 # tw:
 # 	npx -n --experimental-vm-modules jest --watch --no-warnings
 

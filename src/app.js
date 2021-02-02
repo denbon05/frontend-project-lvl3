@@ -78,7 +78,7 @@ const getRSS = (baseURL) => { // if change proxy from hexlet-allorigins then onl
   // });
 	// const res = axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
 	// return res;
-	const requestUrl = `${proxyurl}${baseURL}`;
+	const requestUrl = `${proxyurl}${encodeURIComponent(baseURL)}`;
 	return axios.get(requestUrl);
 };
 

@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
     <title>RSS aggregator</title>
   </head>
   <body>
     <div
       class="modal fade"
       id="modal"
+      data-testid="modal"
       style="display: none"
       aria-hidden="true"
       aria-labelledby="modal"
@@ -69,7 +70,8 @@
             pl
           </button>
         </div>
-        <div class="row justify-content-center">
+
+        <section class="row justify-content-center">
           <div class="col-md-10 col-lg-8 mx-auto text-white">
             <div class="text-center">
               <h1 class="display-3 main-title">RSS Reader</h1>
@@ -80,26 +82,30 @@
             </p>
             <form class="rss-form">
               <div class="form-row">
-                <div class="col" id="containerInput">
+                <div role="textbox" class="col" id="containerInput">
                   <input
+                    aria-label="url"
                     placeholder="RSS link"
-                    name="uri"
                     type="text"
+                    name="url"
+                    test-name="url"
                     data-testid="rssInput"
                     class="form-control form-control-lg w-80"
                     id="rssInput"
                     aria-describedby="rss"
                   />
+                  <div id="response" role="doc-noteref"></div>
                 </div>
-                <div class="col-auto">
-                  <button
+                <div role="button" class="col-auto">
+                  <input
                     type="submit"
                     id="buttonAdd"
+                    name="add"
                     data-testid="buttonAdd"
                     class="btn btn-lg btn-primary px-5"
-                  >
-                    Add
-                  </button>
+                    aria-label="add"
+                    value="Add"
+                  />
                 </div>
               </div>
             </form>
@@ -107,9 +113,16 @@
               Example: https://www.cire.pl/rss/kraj.xml
             </p>
           </div>
+        </section>
+      </section>
+      <section id="rssContainer" class="container-fluid p-5">
+        <div id="feedsContainer" class="row">
+          <div class="col-md-10 col-lg-8 mx-auto feeds"></div>
+        </div>
+        <div class="row" id="postsContainer">
+          <div class="col-md-10 col-lg-8 mx-auto posts"></div>
         </div>
       </section>
-      <section id="rssContainer" class="container-fluid p-5"></section>
     </main>
   <script src="bundle.js"></script></body>
 </html>

@@ -23,9 +23,9 @@ const getPath = (filename) =>
 const readFile = (filename) => fs.readFileSync(getPath(filename), 'utf-8');
 nock.disableNetConnect();
 
-const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 // axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
-// const proxyurl = 'https://hexlet-allorigins.herokuapp.com';
+const proxyurl = 'https://hexlet-allorigins.herokuapp.com/';
 
 const { en, pl } = resources;
 const rss1 = readFile('1.rss');
@@ -38,7 +38,7 @@ const elements = {};
 const getTranslationByLng = (lng = en) => lng.translation;
 
 const applyNock = (url, response, statusCode = 200) => {
-	nock(proxyurl).persist().get(`/${url}`).reply(statusCode, response);
+	nock(proxyurl).persist().get(`/get?disableCache=true&${encodeURIComponent(url)}`).reply(statusCode, response);
 };
 
 beforeEach(async () => {
