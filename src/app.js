@@ -66,8 +66,8 @@ const parseRss = (data) => { // if change proxy from hexlet-allorigins then only
 };
 
 const getRSS = (baseURL) => { // if change proxy from hexlet-allorigins then only data transmitted to parseFrom in parseRss
-	// const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-	const proxyurl = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
+	const proxyurl = 'https://cors-anywhere.herokuapp.com/';
+	// const proxyurl = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 	// const uri = new URL(baseURL, proxyurl);
 	// return axios.request({
   //   url: baseURL,
