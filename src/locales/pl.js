@@ -4,7 +4,7 @@ export default {
 			mainTitle: 'Czytnik RSS',
 			formLead: 'Zacznij czytać RSS już dziś! To jest łatwe, jest przyjemne.',
 			buttonAdd: 'Dodaj',
-			example: 'Przykład: https://www.polsatnews.pl/rss/swiat.xml',
+			example: 'Przykład: http://feeds.linuxportal.pl/LinuxPortalpl-news',
 		},
 		postsButtonPreview: 'Podgląd',
 		feedsTitle: 'Kanały',

@@ -4,7 +4,7 @@ export default {
 			mainTitle: 'RSS Reader',
 			formLead: 'Start reading RSS today! It is easy, it is nicely.',
 			buttonAdd: 'Add',
-			example: 'Example: https://www.polsatnews.pl/rss/swiat.xml',
+			example: 'Example: http://feeds.linuxportal.pl/LinuxPortalpl-news',
 		},
 		postsButtonPreview: 'Preview',
 		feedsTitle: 'Feeds',
