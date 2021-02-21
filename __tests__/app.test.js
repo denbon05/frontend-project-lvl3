@@ -163,10 +163,10 @@ test('Switch language to English', async () => {
   expect(
     await screen.findByText(translation.form.mainTitle),
   ).toBeInTheDocument();
-  // expect(
-  //   await screen.findByText(translation.form.buttonAdd),
-  // ).toBeInTheDocument();
-  // userEvent.type(elements.input, rssLink1);
-  // userEvent.click(elements.submit);
-  // expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
+  expect(
+    await screen.findByText(translation.form.buttonAdd),
+  ).toBeInTheDocument();
+  userEvent.type(elements.input, rssLink1);
+  userEvent.click(elements.submit);
+  expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
 });

@@ -22,12 +22,11 @@ const renderTemplateText = () => {
 };
 
 const switchLanguage = (lng) => {
-  i18next.init({
-    lng,
-    // debug: true,
-    resources,
-  });
-  const lngButtons = document.getElementsByClassName('lng-btn');
+	i18next.changeLanguage(lng);
+	
+	const btnAdd = document.getElementById('buttonAdd');
+	const lngButtons = document.getElementsByClassName('lng-btn');
+	btnAdd.value = i18next.t('form.buttonAdd');
   Object.values(lngButtons).forEach((btnEl) => {
     btnEl.className = 'btn lng-btn';
     if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
@@ -200,7 +199,7 @@ export default (state, elements) => {
     if (mapping[path]) {
       mapping[path](value);
     }
-    if (path === 'lng') {
+    if (path === 'lng' && state.feeds.length > 0) {
       mapping.feeds(state.feeds);
       mapping.posts(state.posts);
     }
