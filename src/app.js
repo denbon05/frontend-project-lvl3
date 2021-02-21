@@ -8,7 +8,7 @@ import validate from './validator';
 
 const logApp = debug('rss-agregator');
 
-const defaultLanguage = 'en';
+const defaultLanguage = 'ru';
 
 const getTitleInfo = (rssElement) => {
   const channelElement = rssElement.querySelector('channel');
@@ -59,8 +59,8 @@ const getPosts = (rssElement, feedId) => {
 };
 
 const parseRss = (data) => { // hexlet-allorigins then only data transmitted to parseFrom
-	// logApp('data %O', data);
-	// console.log('data=>', data);
+  // logApp('data %O', data);
+  // console.log('data=>', data);
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data.contents, 'application/xml');
   const rssElement = parsedData.querySelector('rss');
@@ -82,7 +82,7 @@ const getRSS = (baseURL) => { // hexlet-allorigins then only data transmitted to
   // const res = axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
   // return res;
   const requestUrl = `${proxyurl}${baseURL}`;
-	logApp('requestUrl %o', requestUrl);
+  logApp('requestUrl %o', requestUrl);
   return axios.get(requestUrl);
 };
 
@@ -139,11 +139,11 @@ export default () => {
         },
       },
     },
-	};
+  };
 
-	logApp('state %O', state);
-	
-	i18next.init({
+  logApp('state %O', state);
+
+  i18next.init({
     lng: state.lng,
     // debug: true,
     resources,
@@ -185,8 +185,8 @@ export default () => {
         (err) => Promise.reject(err),
       )
       .then(
-				(response) => {
-					// logApp('response %o', response);
+        (response) => {
+          // logApp('response %o', response);
           const { data } = response;
           return parseRss(data);
         },
@@ -206,9 +206,9 @@ export default () => {
           watched.posts = {
             allIds: newPosts.allIds.concat(state.posts.allIds),
             byId: { ...newPosts.byId, ...state.posts.byId },
-					};
-					watched.value = '';
-					watched.form.status = 'filling';
+          };
+          watched.value = '';
+          watched.form.status = 'filling';
           fields.url = { error: null, valid: true };
           makePostsEvents(watched.clickedPosts);
           return autoupdateState(watched);

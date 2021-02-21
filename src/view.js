@@ -22,7 +22,7 @@ const renderTemplateText = () => {
 };
 
 const switchLanguage = (lng) => {
-	i18next.init({
+  i18next.init({
     lng,
     // debug: true,
     resources,
@@ -124,15 +124,15 @@ const showModal = (title, body, link) => {
 
 const makePostsEvents = ({ byId }) => {
   const btnsModal = document.getElementsByClassName('btn-modal');
-	Object.values(btnsModal).forEach((btnEl) => {
-		const btnLink = btnEl.previousElementSibling;
+  Object.values(btnsModal).forEach((btnEl) => {
+    const btnLink = btnEl.previousElementSibling;
     const { id } = btnEl.dataset;
     const { title, description, link } = byId[id];
     btnEl.addEventListener('click', (e) => {
       e.preventDefault();
-			showModal(title, description, link);
-			btnLink.classList.remove('font-weight-bold');
-			btnLink.classList.add('font-weight-normal');
+      showModal(title, description, link);
+      btnLink.classList.remove('font-weight-bold');
+      btnLink.classList.add('font-weight-normal');
     });
   });
 };
@@ -181,7 +181,7 @@ const renderPosts = (postsColl, clickedPosts, postsContainer) => {
 export default (state, elements) => {
   elements.inputRss.focus();
 
-	// ! Controllers
+  // ! Controllers
   const mapping = {
     value: () => typing(elements),
     'form.status': (status) => rederForm(status, elements),
@@ -193,16 +193,16 @@ export default (state, elements) => {
   };
 
   const watchedState = onChange(state, (path, value) => {
-		if (path !== 'value') {
-			logApp('watchedState path %o', path);
-			// logApp('watchedState value %O', value);
-		}
+    if (path !== 'value') {
+      logApp('watchedState path %o', path);
+      // logApp('watchedState value %O', value);
+    }
     if (mapping[path]) {
       mapping[path](value);
     }
-		if (path === 'lng') {
+    if (path === 'lng') {
       mapping.feeds(state.feeds);
-			mapping.posts(state.posts);
+      mapping.posts(state.posts);
     }
   });
 

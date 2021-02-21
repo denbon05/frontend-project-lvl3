@@ -28,7 +28,7 @@ nock.disableNetConnect();
 // axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(baseURL)}`);
 const proxyurl = 'https://hexlet-allorigins.herokuapp.com/';
 
-const { en, pl } = resources;
+const { en, ru } = resources;
 const rss1Data = readFile('1.rss');
 const rss2Data = readFile('2.rss');
 const rssLink1 = 'https://news.rambler.ru/rss/photo/';
@@ -36,14 +36,12 @@ const rssLink2 = 'http://feeds.linuxportal.pl/LinuxPortalpl-news';
 const nonRssLink = 'https://google.com';
 const elements = {};
 
-const getTranslationByLng = (lng = en) => lng.translation;
-
 const applyNock = (url, responseData, statusCode = 200) => {
-	nock(proxyurl)
-		.persist()
-		.get('/get')
-		.query({ url, disableCache: true })
-		.reply(statusCode, { contents: responseData });
+  nock(proxyurl)
+    .persist()
+    .get('/get')
+    .query({ url, disableCache: true })
+    .reply(statusCode, { contents: responseData });
 };
 
 beforeEach(async () => {
@@ -53,14 +51,14 @@ beforeEach(async () => {
 
   elements.input = screen.getByRole('textbox', { name: 'url' });
   elements.submit = screen.getByRole('button', { name: 'add' });
-	elements.responseEl = screen.getByRole('doc-noteref');
-	elements.resContainer = document.getElementById('response');
+  elements.responseEl = screen.getByRole('doc-noteref');
+  elements.resContainer = document.getElementById('response');
 
   app();
 });
 
 describe('Show errors in form', () => {
-  const { errors } = getTranslationByLng(en);
+  const { errors } = ru.translation;
 
   test('Validation: URL', async () => {
     userEvent.type(elements.input, 'not_url');
@@ -81,26 +79,29 @@ describe('Show errors in form', () => {
   });
 
   test('Validation: RSS feed already exist & check disable button', async () => {
-		applyNock(rssLink1, rss1Data);
+    applyNock(rssLink1, rss1Data);
 
     userEvent.type(elements.input, rssLink1);
     expect(elements.submit).toBeEnabled();
     userEvent.click(elements.submit);
-		expect(elements.submit).toBeDisabled();
+    expect(elements.submit).toBeDisabled();
 
-		await waitFor(() => expect(elements.submit).toBeEnabled());
-		expect(elements.input.value).toBe('');
-		userEvent.type(elements.input, rssLink1);
-		userEvent.click(elements.submit);
-		expect(
+    await waitFor(() => expect(elements.submit).toBeEnabled());
+    expect(elements.input.value).toBe('');
+    userEvent.type(elements.input, rssLink1);
+    userEvent.click(elements.submit);
+    expect(
       await findByText(elements.resContainer, errors.existRss.split(':')[0], {
         exact: false,
       }),
     ).toBeVisible();
     expect(elements.input.value).toBe(rssLink1);
   });
+});
 
+describe('Positive cases', () => {
   test('RSS feeds add', async () => {
+    const { translation } = ru;
     applyNock(rssLink1, rss1Data);
     applyNock(rssLink2, rss2Data);
 
@@ -108,7 +109,7 @@ describe('Show errors in form', () => {
     userEvent.click(elements.submit);
     expect(elements.input).toHaveAttribute('readonly');
 
-    expect(await screen.findByText(/Rss has been loaded/i)).toBeInTheDocument();
+    expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
     expect(
       await screen.findByText(/Фото — Рамблер\/новости/i),
     ).toBeInTheDocument();
@@ -126,57 +127,46 @@ describe('Show errors in form', () => {
     ).toBeInTheDocument();
   });
 
-  test('Clicked links or buttons', async () => {
+  test('Clicked links or buttons && Show modal', async () => {
     applyNock(rssLink2, rss2Data);
+    const { translation } = ru;
 
     userEvent.type(elements.input, rssLink2);
     userEvent.click(elements.submit);
 
-		const postLinks = await screen.findAllByTestId('post-link');
-		const previewBtns = await screen.findAllByTestId('preview');
+    const postLinks = await screen.findAllByTestId('post-link');
+    const previewBtns = await screen.findAllByTestId('preview');
     expect(postLinks[2]).toHaveClass('font-weight-bold');
-		userEvent.click(postLinks[2]);
-		userEvent.click(previewBtns[4]);
-		const updatedPostLinks = await screen.findAllByTestId('post-link');
-		expect(updatedPostLinks[2]).not.toHaveClass('font-weight-bold');
-		expect(updatedPostLinks[4]).not.toHaveClass('font-weight-bold');
-		expect(updatedPostLinks[4]).toHaveClass('font-weight-normal');
+    userEvent.click(postLinks[2]);
+    userEvent.click(previewBtns[4]);
+    const updatedPostLinks = await screen.findAllByTestId('post-link');
+    expect(updatedPostLinks[2]).not.toHaveClass('font-weight-bold');
+    expect(updatedPostLinks[4]).not.toHaveClass('font-weight-bold');
+    expect(updatedPostLinks[4]).toHaveClass('font-weight-normal');
     expect(updatedPostLinks[2]).toHaveClass('font-weight-normal');
-		expect(updatedPostLinks[3]).toHaveClass('post-link font-weight-bold');
+    expect(updatedPostLinks[3]).toHaveClass('post-link font-weight-bold');
+    expect(await screen.findByText(translation.modal.oppenLinkButton)).toBeVisible();
+    const closeBtn = screen.getByText(translation.modal.closeModalButton);
+    userEvent.click(closeBtn);
+    expect(await screen.findByText(translation.modal.oppenLinkButton)).not.toBeVisible();
   });
 });
 
-// test('Switch language to Poland', async () => {
-//   applyNock(rssLink1, rss1Data);
-//   const btnsContainer = document.getElementById('switchLng');
-//   const plBtn = await findByText(btnsContainer, 'pl');
-//   expect(plBtn).toBeInTheDocument();
-//   userEvent.click(plBtn);
-//   const translation = getTranslationByLng(pl);
-//   expect(
-//     await screen.findByText(translation.form.mainTitle),
-//   ).toBeInTheDocument();
-//   expect(
-//     await screen.findByText(translation.form.formLead),
-//   ).toBeInTheDocument();
-//   userEvent.type(elements.input, rssLink1);
-//   userEvent.click(elements.submit);
-//   expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
-// });
+test('Switch language to English', async () => {
+  applyNock(rssLink1, rss1Data);
 
-// test('Show modal', async () => {
-//   applyNock(rssLink2, rss2Data);
-//   userEvent.type(elements.input, rssLink2);
-//   userEvent.click(elements.submit);
-//   const previewBtns = await screen.findAllByRole('button', {
-//     name: /preview/i,
-//   });
-//   expect(
-//     screen.getByRole('link', { name: /Sigma z rekordowym wzrostem sprzedaży/i }),
-//   ).toHaveClass('font-weight-bold');
-//   userEvent.click(previewBtns[1]);
-//   expect(await screen.findByText('Full article')).toBeVisible();
-//   const closeBtn = screen.getByText('Close');
-//   userEvent.click(closeBtn);
-//   expect(await screen.findByText('Full article')).not.toBeVisible();
-// });
+  const btnsContainer = document.getElementById('switchLng');
+  const enBtn = await findByText(btnsContainer, 'en');
+  expect(enBtn).toBeInTheDocument();
+  userEvent.click(enBtn);
+  const { translation } = en;
+  expect(
+    await screen.findByText(translation.form.mainTitle),
+  ).toBeInTheDocument();
+  // expect(
+  //   await screen.findByText(translation.form.buttonAdd),
+  // ).toBeInTheDocument();
+  // userEvent.type(elements.input, rssLink1);
+  // userEvent.click(elements.submit);
+  // expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
+});
