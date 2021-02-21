@@ -10,7 +10,7 @@ build:
 	npx webpack
 
 test:
-	npm test
+	DEBUG=rss-agregator DEBUG_COLORS=true npm test
 
 # tw:
 # 	npx -n --experimental-vm-modules jest --watch --no-warnings

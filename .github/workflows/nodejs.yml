@@ -26,9 +26,7 @@ jobs:
         env:
           CI: true
       - name: Run linter
-        run: |
-          make format
-          make fix
+        run: make fix
       - name: Test & publish code coverage
         # https://github.com/paambaati/codeclimate-action
         uses: paambaati/codeclimate-action@v2.7.5
