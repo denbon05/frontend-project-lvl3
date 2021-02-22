@@ -55,6 +55,7 @@
   "dependencies": {
     "@popperjs/core": "^2.6.0",
     "axios": "^0.21.1",
+    "axios-debug-log": "^0.8.2",
     "bootstrap": "^4.5.3",
     "debug": "^4.3.1",
     "i18next": "^19.8.4",

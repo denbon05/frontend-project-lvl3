@@ -60,6 +60,18 @@ beforeEach(async () => {
 describe('Show errors in form', () => {
   const { errors } = ru.translation;
 
+  test('Render network error', async () => {
+    // applyNock(rssLink1, 'Failed!', 500);
+    nock(proxyurl).get('/get').query({ url: rssLink1, disableCache: true })
+      .replyWithError({ message: 'Network Errror' });
+
+    userEvent.type(elements.input, rssLink1);
+    userEvent.click(elements.submit);
+    expect(
+      await findByText(elements.resContainer, errors.net),
+    ).toBeInTheDocument();
+  });
+
   test('Validation: URL', async () => {
     userEvent.type(elements.input, 'not_url');
     userEvent.click(elements.submit);

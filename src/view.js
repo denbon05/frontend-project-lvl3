@@ -1,7 +1,6 @@
 import i18next from 'i18next';
 import onChange from 'on-change';
 import debug from 'debug';
-import resources from './locales';
 
 const logApp = debug('rss-agregator');
 
@@ -22,11 +21,11 @@ const renderTemplateText = () => {
 };
 
 const switchLanguage = (lng) => {
-	i18next.changeLanguage(lng);
-	
-	const btnAdd = document.getElementById('buttonAdd');
-	const lngButtons = document.getElementsByClassName('lng-btn');
-	btnAdd.value = i18next.t('form.buttonAdd');
+  i18next.changeLanguage(lng);
+
+  const btnAdd = document.getElementById('buttonAdd');
+  const lngButtons = document.getElementsByClassName('lng-btn');
+  btnAdd.value = i18next.t('form.buttonAdd');
   Object.values(lngButtons).forEach((btnEl) => {
     btnEl.className = 'btn lng-btn';
     if (lng === btnEl.id) btnEl.classList.add('btn-secondary');

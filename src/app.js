@@ -2,9 +2,24 @@ import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
 import debug from 'debug';
+import axiosDebug from 'axios-debug-log';
 import initView from './view';
 import resources from './locales';
 import validate from './validator';
+
+axiosDebug({
+  response(debugAxios, response) {
+    debugAxios({
+      'Response with': response.headers['content-type'],
+      from: response.config.url,
+      statusCode: response.status,
+    });
+  },
+  error(debugAxios, error) {
+    // Read https://www.npmjs.com/package/axios#handling-errors for more info
+    debugAxios('Request error:', error);
+  },
+});
 
 const logApp = debug('rss-agregator');
 
@@ -217,7 +232,8 @@ export default () => {
       )
       .catch((err) => {
         // console.log('MAIN-err-message->', err.message);
-        fields.url = { error: err.message, valid: false };
+        if (err.message.includes('Network')) fields.url = { error: i18next.t('errors.net'), valid: false };
+        else fields.url = { error: err.message, valid: false };
         watched.form.status = 'failed';
       });
   });
