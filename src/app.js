@@ -84,8 +84,11 @@ const parseRss = (data) => { // hexlet-allorigins then only data transmitted to 
 };
 
 const getRSS = (baseURL) => { // hexlet-allorigins then only data transmitted to parseFrom
+	const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
+  urlWithProxy.searchParams.set('url', baseURL);
+  urlWithProxy.searchParams.set('disableCache', 'true');
   // const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-  const proxyurl = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
+  // const proxyurl = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
   // const uri = new URL(baseURL, proxyurl);
   // return axios.request({
   //   url: baseURL,
@@ -96,9 +99,9 @@ const getRSS = (baseURL) => { // hexlet-allorigins then only data transmitted to
   // });
   // const res = axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
   // return res;
-  const requestUrl = `${proxyurl}${baseURL}`;
-  logApp('requestUrl %o', requestUrl);
-  return axios.get(requestUrl);
+  // const requestUrl = `${proxyurl}${baseURL}`;
+  // logApp('requestUrl %o', requestUrl);
+  return axios.get(urlWithProxy.toString());
 };
 
 const makePostsEvents = (clickedIds) => {

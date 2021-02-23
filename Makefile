@@ -10,7 +10,7 @@ build:
 	npx webpack
 
 test:
-	DEBUG=axios DEBUG_COLORS=true npm test
+	DEBUG_COLORS=true npm test
 
 # tw:
 # 	npx -n --experimental-vm-modules jest --watch --no-warnings
