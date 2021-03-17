@@ -1,6 +1,6 @@
 # RSS agreggator
 
-## <a href="frontend-project-lvl3-git-main.denbon05.vercel.app">Follow link</a>
+## <a href="https://frontend-project-lvl3-git-main-denbon05.vercel.app/">Follow link</a>
 
 ## Hexlet tests and linter status:
 
@@ -11,6 +11,6 @@
 
 ### Description
 
-You can view news from different sites.The RSS aggregator automatically monitors updates and adds new articles to the list.
+You can view news from different sites.The <a href="https://frontend-project-lvl3-git-main-denbon05.vercel.app/">RSS aggregator</a> automatically monitors updates and adds new articles to the list.
 
 #### <b>`make start`</b> - In the develop mode run webpack server
