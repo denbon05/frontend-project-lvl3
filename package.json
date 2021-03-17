@@ -2,10 +2,10 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "RSS agreggator",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "jest --colors",
-    "build": "webpack",
+    "build": "rm -rf dist | webpack",
     "start:dev": "webpack-dev-server"
   },
   "jest": {
@@ -55,9 +55,8 @@
   "dependencies": {
     "@popperjs/core": "^2.6.0",
     "axios": "^0.21.1",
-    "axios-debug-log": "^0.8.2",
     "bootstrap": "^4.5.3",
-    "debug": "^4.3.1",
+    "chokidar": "^3.5.1",
     "i18next": "^19.8.4",
     "jquery": "^3.5.1",
     "lodash": "^4.17.20",

@@ -20,7 +20,7 @@ const validate = (url, feeds) => {
     .required()
     .notOneOf(links, () => i18next.t('errors.existRss', { url }));
 
-  return schema.validate(url);
+  return schema.validateSync(url);
 };
 
 export default validate;

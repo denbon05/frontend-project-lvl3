@@ -1,39 +1,13 @@
+// @ts-check
+
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
-import debug from 'debug';
-import axiosDebug from 'axios-debug-log';
 import initView from './view';
 import resources from './locales';
 import validate from './validator';
 
-axiosDebug({
-  response(debugAxios, response) {
-    debugAxios({
-      'Response with': response.headers['content-type'],
-      from: response.config.url,
-      statusCode: response.status,
-    });
-  },
-  error(debugAxios, error) {
-    // Read https://www.npmjs.com/package/axios#handling-errors for more info
-    debugAxios('Request error:', error);
-  },
-});
-
-const logApp = debug('rss-agregator');
-
 const defaultLanguage = 'ru';
-
-const getTitleInfo = (rssElement) => {
-  const channelElement = rssElement.querySelector('channel');
-  const titleElement = channelElement.querySelector('title');
-  const descriptionElement = channelElement.querySelector('description');
-  return {
-    title: titleElement.textContent,
-    description: descriptionElement.textContent,
-  };
-};
 
 const parseRSSItem = (rssItem) => ({
   link: rssItem.querySelector('link').textContent,
@@ -41,100 +15,57 @@ const parseRSSItem = (rssItem) => ({
   description: rssItem.querySelector('description').textContent,
 });
 
-const makePosts = (items, feedId) => items.reduce(
-  (acc, item) => {
-    const id = _.uniqueId();
-    acc.byId[id] = {
-      ...parseRSSItem(item),
-      id,
-      feedId,
-    };
-    acc.allIds.push(id);
-    return acc;
-  },
-  { byId: {}, allIds: [] },
-);
-
-const getNewPosts = (oldPosts, rssElement, feedId) => {
-  const { allIds, byId } = oldPosts;
-  const rssItems = rssElement.getElementsByTagName('item');
-  const newPosts = Object.values(rssItems).filter((item) => {
-    const { title, description } = parseRSSItem(item);
-    return !allIds.some(
-      (id) => byId[id].title === title && byId[id].description === description,
-    );
-  });
-  if (newPosts.length === 0) return null;
-  return makePosts(newPosts, feedId);
-};
-
 const getPosts = (rssElement, feedId) => {
   const items = rssElement.getElementsByTagName('item');
-  return makePosts(Object.values(items), feedId);
+  return Object.values(items)
+    .map((item) => ({
+      ...parseRSSItem(item),
+      id: _.uniqueId(),
+      feedId,
+    }));
 };
 
-const parseRss = (data) => { // hexlet-allorigins then only data transmitted to parseFrom
-  // logApp('data %O', data);
+const getNewPosts = (rssElement, feedId, oldPosts) => {
+  const newPosts = getPosts(rssElement, feedId);
+  return oldPosts
+    .filter((oldPost) => !newPosts.some((post) => post.title === oldPost.title));
+};
+
+const parseRss = (data) => {
   // console.log('data=>', data);
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data.contents, 'application/xml');
   const rssElement = parsedData.querySelector('rss');
-  if (rssElement) return Promise.resolve(rssElement);
+  if (rssElement) return rssElement;
   throw Error(i18next.t('errors.sourceWithoutRss'));
 };
 
-const getRSS = (baseURL) => { // hexlet-allorigins then only data transmitted to parseFrom
-	const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
-  urlWithProxy.searchParams.set('url', baseURL);
-  urlWithProxy.searchParams.set('disableCache', 'true');
-  // const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-  // const proxyurl = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
-  // const uri = new URL(baseURL, proxyurl);
-  // return axios.request({
-  //   url: baseURL,
-  //   proxy: {
-  //     host: uri.host,
-  //     protocol: uri.protocol,
-  //   },
-  // });
-  // const res = axios.get(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(baseURL)}`);
-  // return res;
-  // const requestUrl = `${proxyurl}${baseURL}`;
-  // logApp('requestUrl %o', requestUrl);
-  return axios.get(urlWithProxy.toString());
-};
-
-const makePostsEvents = (clickedIds) => {
+const makePostsEvents = (clickedPostIds) => {
   const postsLinksEl = document.getElementsByClassName('post-link');
-  Object.values(postsLinksEl).forEach((linkEl) => {
-    linkEl.addEventListener('mouseup', (e) => {
-      const clickedElId = e.target.dataset.id;
-      clickedIds.push(clickedElId);
+  const postsBtnsEl = document.getElementsByClassName('btn-modal');
+  [postsLinksEl, postsBtnsEl].forEach((el) => {
+    Object.values(el).forEach((linkEl) => {
+      linkEl.addEventListener('mouseup', (e) => {
+        const clickedElId = e.target.dataset.id;
+        clickedPostIds.push(clickedElId);
+      });
     });
   });
 };
 
+const getData = (baseURL) => {
+  const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
+  urlWithProxy.searchParams.set('disableCache', 'true');
+  urlWithProxy.searchParams.set('url', baseURL);
+  return axios.get(urlWithProxy.toString());
+};
+
 const autoupdateState = (state, updateThrough = 5000) => {
-  const { form, posts, clickedPosts } = state;
-  const links = state.feeds.map(({ link, id }) => ({ link, id }));
-  links.forEach(({ link, id }) => {
-    getRSS(link).then((response) => parseRss(response.data).then(
-      (rssElement) => {
-        const newPosts = getNewPosts(posts, rssElement, id);
-        if (newPosts) {
-          state.posts = {
-            allIds: newPosts.allIds.concat(posts.allIds),
-            byId: { ...posts.byId, ...newPosts.byId },
-          };
-          makePostsEvents(clickedPosts);
-        }
-        form.status = 'filling';
-      },
-      (error) => {
-        form.fields.url = { valid: true, error };
-        return Promise.reject(error);
-      },
-    ));
+  state.feeds.forEach(({ link, id }) => {
+    getData(link).then(({ data }) => {
+      const rssElement = parseRss(data);
+      state.posts.concat(getNewPosts(rssElement, id, state.posts));
+    }, (err) => { state.form.url.error = err.message; });
   });
   setTimeout(() => {
     autoupdateState(state);
@@ -145,21 +76,16 @@ export default () => {
   const state = {
     lng: defaultLanguage,
     feeds: [],
-    value: '',
-    posts: { byId: {}, allIds: [] },
-    clickedPosts: [],
+    posts: [],
+    clickedPostIds: [],
+    stateSubmitProcess: 'processed',
     form: {
-      status: 'filling',
-      fields: {
-        url: {
-          valid: true,
-          error: null,
-        },
+      url: {
+        valid: true,
+        error: null,
       },
     },
   };
-
-  logApp('state %O', state);
 
   i18next.init({
     lng: state.lng,
@@ -179,10 +105,6 @@ export default () => {
 
   const watched = initView(state, elements);
 
-  elements.inputRss.addEventListener('input', ({ target: { value } }) => {
-    watched.value = value;
-  });
-
   const lngButtons = document.getElementsByClassName('lng-btn');
   Object.values(lngButtons).forEach((btnEl) => {
     btnEl.addEventListener('click', (e) => {
@@ -193,51 +115,38 @@ export default () => {
 
   elements.formRss.addEventListener('submit', (e) => {
     e.preventDefault();
-    watched.form.status = 'loading';
+    watched.stateSubmitProcess = 'loading';
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    const { fields } = watched.form;
-    validate(url, state.feeds)
+    try { validate(url, state.feeds); } catch (err) {
+      watched.form.url = { error: err.message, valid: false };
+      watched.stateSubmitProcess = 'invalid';
+      return;
+    }
+    getData(url)
       .then(
-        () => getRSS(url),
-        (err) => Promise.reject(err),
-      )
-      .then(
-        (response) => {
-          // logApp('response %o', response);
-          const { data } = response;
-          return parseRss(data);
-        },
-        (err) => Promise.reject(err),
-      )
-      .then(
-        (rssElement) => {
-          fields.url = { error: null, valid: true };
-          // logApp('rssElement %o', rssElement);
-          const id = _.uniqueId();
+        ({ data }) => {
+          const rssElement = parseRss(data);
+          const feedId = _.uniqueId();
           watched.feeds.push({
-            ...getTitleInfo(rssElement),
+            ...parseRSSItem(rssElement),
             link: url,
-            id,
+            id: feedId,
           });
-          const newPosts = getPosts(rssElement, id);
-          watched.posts = {
-            allIds: newPosts.allIds.concat(state.posts.allIds),
-            byId: { ...newPosts.byId, ...state.posts.byId },
-          };
-          watched.value = '';
-          watched.form.status = 'filling';
-          fields.url = { error: null, valid: true };
-          makePostsEvents(watched.clickedPosts);
+          watched.posts = [...getPosts(rssElement, feedId), ...watched.posts];
+          watched.form.url = { error: null, valid: true };
+          watched.stateSubmitProcess = 'processed';
+          makePostsEvents(watched.clickedPostIds);
           return autoupdateState(watched);
         },
         (err) => Promise.reject(err),
       )
       .catch((err) => {
         // console.log('MAIN-err-message->', err.message);
-        if (err.message.includes('Network')) fields.url = { error: i18next.t('errors.net'), valid: false };
-        else fields.url = { error: err.message, valid: false };
-        watched.form.status = 'failed';
+        if (err.message.includes('Network')) {
+          watched.form.url = { error: i18next.t('errors.net'), valid: false };
+        } else watched.form.url = { error: err.message, valid: false };
+        watched.stateSubmitProcess = 'invalid';
       });
   });
 };

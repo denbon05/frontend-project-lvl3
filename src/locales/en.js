@@ -19,6 +19,7 @@ export default {
       required: 'this field is required',
       existRss: 'Rss has been loaded',
       sourceWithoutRss: "This source doesn't contain valid rss",
+      net: 'Network Errror',
     },
   },
 };

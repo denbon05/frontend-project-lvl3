@@ -25,7 +25,6 @@ const readFile = (filename) => fs.readFileSync(getPath(filename), 'utf-8');
 nock.disableNetConnect();
 
 // const proxyurl = 'https://cors-anywhere.herokuapp.com/';
-// axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(baseURL)}`);
 const proxyurl = 'https://hexlet-allorigins.herokuapp.com/';
 
 const { en, ru } = resources;
@@ -75,9 +74,7 @@ describe('Show errors in form', () => {
   test('Validation: URL', async () => {
     userEvent.type(elements.input, 'not_url');
     userEvent.click(elements.submit);
-    await waitFor(() => expect(
-      screen.getByText(new RegExp(errors.validURL, 'i')),
-    ).toBeInTheDocument());
+    expect(await screen.findByText(new RegExp(errors.validURL, 'i'))).toBeInTheDocument();
   });
 
   test('Validation: incorect RSS link', async () => {

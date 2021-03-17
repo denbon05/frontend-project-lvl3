@@ -1,13 +1,7 @@
+// @ts-check
+
 import i18next from 'i18next';
 import onChange from 'on-change';
-import debug from 'debug';
-
-const logApp = debug('rss-agregator');
-
-const typing = ({ inputRss, responseRss }) => {
-  inputRss.className = 'form-control form-control-lg w-80';
-  responseRss.textContent = '';
-};
 
 const renderTemplateText = () => {
   const mainTitleEl = document.querySelector('.main-title');
@@ -25,6 +19,7 @@ const switchLanguage = (lng) => {
 
   const btnAdd = document.getElementById('buttonAdd');
   const lngButtons = document.getElementsByClassName('lng-btn');
+  // @ts-ignore
   btnAdd.value = i18next.t('form.buttonAdd');
   Object.values(lngButtons).forEach((btnEl) => {
     btnEl.className = 'btn lng-btn';
@@ -32,27 +27,6 @@ const switchLanguage = (lng) => {
     else btnEl.classList.add('btn-outline-secondary');
   });
   renderTemplateText();
-};
-
-const rederForm = (status, { buttonRss, inputRss, responseRss }) => {
-  switch (status) {
-    case 'filling':
-      inputRss.removeAttribute('readonly');
-      inputRss.value = '';
-      buttonRss.disabled = false;
-      return;
-    case 'loading':
-      inputRss.setAttribute('readonly', true);
-      buttonRss.disabled = true;
-      responseRss.textContent = '';
-      return;
-    case 'failed':
-      inputRss.removeAttribute('readonly');
-      buttonRss.disabled = false;
-      return;
-    default:
-      throw Error(`Unknow form status: "${status}"`);
-  }
 };
 
 const renderResponse = ({ error, valid }, { responseRss, inputRss }) => {
@@ -88,8 +62,10 @@ const addAttributes = (modalEl, bgFadeEl) => {
 };
 
 const renderClickedLinks = (ids) => {
+  if (!ids) return;
+  // console.log('ids=>>>', ids);
   ids.forEach((id) => {
-    const aEl = document.querySelector(`a[data-id="${id}"]`);
+    const aEl = document.querySelector(`[data-id="${id}"]`);
     aEl.classList.remove('font-weight-bold');
     aEl.classList.add('font-weight-normal');
   });
@@ -116,16 +92,18 @@ const showModal = (title, body, link) => {
     closeBtn(modalEl, bgFadeEl);
   }));
   document.addEventListener('click', (e) => {
+    // @ts-ignore
     if (e.target.id === 'modal') closeBtn(modalEl, bgFadeEl);
   });
 };
 
-const makePostsEvents = ({ byId }) => {
+const makePostsEvents = (posts) => {
   const btnsModal = document.getElementsByClassName('btn-modal');
   Object.values(btnsModal).forEach((btnEl) => {
     const btnLink = btnEl.previousElementSibling;
-    const { id } = btnEl.dataset;
-    const { title, description, link } = byId[id];
+    // @ts-ignore
+    const { id: btnId } = btnEl.dataset;
+    const { title, description, link } = posts.find(({ id }) => id === btnId);
     btnEl.addEventListener('click', (e) => {
       e.preventDefault();
       showModal(title, description, link);
@@ -152,23 +130,19 @@ const renderFeeds = (feedsColl, feedsContainer) => {
 };
 
 const renderPosts = (postsColl, clickedPosts, postsContainer) => {
-  const { allIds, byId } = postsColl;
   const postsCol = postsContainer.firstElementChild;
   postsCol.innerHTML = [
     `<h2>${i18next.t('postsTitle')}</h2>`,
     '<ul class="list-group mb-5">',
-    `${allIds
-      .map((id) => {
-        const { title, link } = byId[id];
-        return [
-          '<li class="list-group-item d-flex justify-content-between align-items-start">',
-          `<a role="link" href="${link}" target="_blank" data-id="${id}-link" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
-          `<button role="button" type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="preview" data-toggle="modal" data-target="#modal">${i18next.t(
-            'postsButtonPreview',
-          )}</button>`,
-          '</li>',
-        ].join('');
-      })
+    `${postsColl
+      .map(({ title, link, id }) => [
+        '<li class="list-group-item d-flex justify-content-between align-items-start">',
+        `<a role="link" href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
+        `<button role="button" type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="preview" data-toggle="modal" data-target="#modal">${i18next.t(
+          'postsButtonPreview',
+        )}</button>`,
+        '</li>',
+      ].join(''))
       .join('')}`,
     '</ul>',
   ].join('');
@@ -176,25 +150,44 @@ const renderPosts = (postsColl, clickedPosts, postsContainer) => {
   renderClickedLinks(clickedPosts);
 };
 
+const changeForm = (status, { buttonRss, inputRss, responseRss }) => {
+  switch (status) {
+    case 'processed':
+      inputRss.removeAttribute('readonly');
+      inputRss.value = '';
+      buttonRss.disabled = false;
+      return;
+    case 'loading':
+      responseRss.classList.remove('text-danger');
+      inputRss.setAttribute('readonly', true);
+      buttonRss.disabled = true;
+      responseRss.textContent = '';
+      return;
+    case 'invalid':
+      inputRss.removeAttribute('readonly');
+      buttonRss.disabled = false;
+      return;
+    default:
+      throw Error(`Unknow form status: "${status}"`);
+  }
+};
+
 export default (state, elements) => {
   elements.inputRss.focus();
 
   // ! Controllers
   const mapping = {
-    value: () => typing(elements),
-    'form.status': (status) => rederForm(status, elements),
-    'form.fields.url': (value) => renderResponse(value, elements),
+    'form.url': (value) => renderResponse(value, elements),
     feeds: (feedsColl) => renderFeeds(feedsColl, elements.feedsContainer),
     posts: (postsColl) => renderPosts(postsColl, state.clickedPosts, elements.postsContainer),
     lng: (language) => switchLanguage(language),
-    clickedPosts: (ids) => renderClickedLinks(ids),
+    clickedPostIds: (ids) => renderClickedLinks(ids),
+    stateSubmitProcess: (status) => changeForm(status, elements),
   };
 
   const watchedState = onChange(state, (path, value) => {
-    if (path !== 'value') {
-      logApp('watchedState path %o', path);
-      // logApp('watchedState value %O', value);
-    }
+    if (!mapping[path]) return;
+    // console.log('path=>>', path);
     if (mapping[path]) {
       mapping[path](value);
     }

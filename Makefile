@@ -7,10 +7,10 @@ start:
 	npm run start:dev
 
 build:
-	npx webpack
+	npm run build
 
 test:
-	DEBUG_COLORS=true npm test
+	npm test
 
 # tw:
 # 	npx -n --experimental-vm-modules jest --watch --no-warnings
@@ -27,4 +27,4 @@ fix:
 format:
 	npx prettier --write .
 
-.PHONY: test
+.PHONY: test build
