@@ -98,27 +98,26 @@ const showModal = (title, body, link) => {
 };
 
 const makePostsEvents = (posts) => {
-  const btnsModal = document.getElementsByClassName('btn-modal');
-  Object.values(btnsModal).forEach((btnEl) => {
-    const btnLink = btnEl.previousElementSibling;
+  const postsListContainer = document.getElementById('posts-list');
+  postsListContainer.addEventListener('click', (e) => {
     // @ts-ignore
-    const { id: btnId } = btnEl.dataset;
+    const { id: btnId } = e.target.dataset;
+    if (!btnId) return;
     const { title, description, link } = posts.find(({ id }) => id === btnId);
-    btnEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      showModal(title, description, link);
-      btnLink.classList.remove('font-weight-bold');
-      btnLink.classList.add('font-weight-normal');
-    });
+    showModal(title, description, link);
+    // @ts-ignore
+    e.target.classList.remove('font-weight-bold');
+    // @ts-ignore
+    e.target.classList.add('font-weight-normal');
   });
 };
 
-const renderFeeds = (feedsColl, feedsContainer) => {
+const renderFeeds = (feeds, feedsContainer) => {
   const feedsCol = feedsContainer.firstElementChild;
   feedsCol.innerHTML = [
     `<h2>${i18next.t('feedsTitle')}</h2>`,
     '<ul class="list-group mb-5">',
-    `${feedsColl
+    `${feeds
       .map(({ title, description }) => [
         '<li class="list-group-item">',
         `<h3>${title}</h3>`,
@@ -129,12 +128,12 @@ const renderFeeds = (feedsColl, feedsContainer) => {
   ].join('');
 };
 
-const renderPosts = (postsColl, clickedPosts, postsContainer) => {
+const renderPosts = (posts, clickedPosts, postsContainer) => {
   const postsCol = postsContainer.firstElementChild;
   postsCol.innerHTML = [
     `<h2>${i18next.t('postsTitle')}</h2>`,
-    '<ul class="list-group mb-5">',
-    `${postsColl
+    '<ul class="list-group mb-5" id="posts-list">',
+    `${posts
       .map(({ title, link, id }) => [
         '<li class="list-group-item d-flex justify-content-between align-items-start">',
         `<a role="link" href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
@@ -146,13 +145,13 @@ const renderPosts = (postsColl, clickedPosts, postsContainer) => {
       .join('')}`,
     '</ul>',
   ].join('');
-  makePostsEvents(postsColl);
+  makePostsEvents(posts);
   renderClickedLinks(clickedPosts);
 };
 
 const changeForm = (status, { buttonRss, inputRss, responseRss }) => {
   switch (status) {
-    case 'processed':
+    case 'waiting':
       inputRss.removeAttribute('readonly');
       inputRss.value = '';
       buttonRss.disabled = false;
@@ -163,7 +162,7 @@ const changeForm = (status, { buttonRss, inputRss, responseRss }) => {
       buttonRss.disabled = true;
       responseRss.textContent = '';
       return;
-    case 'invalid':
+    case 'failed':
       inputRss.removeAttribute('readonly');
       buttonRss.disabled = false;
       return;
@@ -177,9 +176,9 @@ export default (state, elements) => {
 
   // ! Controllers
   const mapping = {
-    'form.url': (value) => renderResponse(value, elements),
-    feeds: (feedsColl) => renderFeeds(feedsColl, elements.feedsContainer),
-    posts: (postsColl) => renderPosts(postsColl, state.clickedPosts, elements.postsContainer),
+    form: (value) => renderResponse(value, elements),
+    feeds: (feeds) => renderFeeds(feeds, elements.feedsContainer),
+    posts: (posts) => renderPosts(posts, state.clickedPosts, elements.postsContainer),
     lng: (language) => switchLanguage(language),
     clickedPostIds: (ids) => renderClickedLinks(ids),
     stateSubmitProcess: (status) => changeForm(status, elements),

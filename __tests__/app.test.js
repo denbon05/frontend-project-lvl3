@@ -61,7 +61,9 @@ describe('Show errors in form', () => {
 
   test('Render network error', async () => {
     // applyNock(rssLink1, 'Failed!', 500);
-    nock(proxyurl).get('/get').query({ url: rssLink1, disableCache: true })
+    nock(proxyurl)
+      .get('/get')
+      .query({ url: rssLink1, disableCache: true })
       .replyWithError({ message: 'Network Errror' });
 
     userEvent.type(elements.input, rssLink1);
@@ -74,7 +76,9 @@ describe('Show errors in form', () => {
   test('Validation: URL', async () => {
     userEvent.type(elements.input, 'not_url');
     userEvent.click(elements.submit);
-    expect(await screen.findByText(new RegExp(errors.validURL, 'i'))).toBeInTheDocument();
+    expect(
+      await screen.findByText(new RegExp(errors.validURL, 'i')),
+    ).toBeInTheDocument();
   });
 
   test('Validation: incorect RSS link', async () => {
@@ -154,10 +158,14 @@ describe('Positive cases', () => {
     expect(updatedPostLinks[4]).toHaveClass('font-weight-normal');
     expect(updatedPostLinks[2]).toHaveClass('font-weight-normal');
     expect(updatedPostLinks[3]).toHaveClass('post-link font-weight-bold');
-    expect(await screen.findByText(translation.modal.oppenLinkButton)).toBeVisible();
+    expect(
+      await screen.findByText(translation.modal.oppenLinkButton),
+    ).toBeVisible();
     const closeBtn = screen.getByText(translation.modal.closeModalButton);
     userEvent.click(closeBtn);
-    expect(await screen.findByText(translation.modal.oppenLinkButton)).not.toBeVisible();
+    expect(
+      await screen.findByText(translation.modal.oppenLinkButton),
+    ).not.toBeVisible();
   });
 });
 

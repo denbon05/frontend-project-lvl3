@@ -17,59 +17,61 @@ const parseRSSItem = (rssItem) => ({
 
 const getPosts = (rssElement, feedId) => {
   const items = rssElement.getElementsByTagName('item');
-  return Object.values(items)
-    .map((item) => ({
-      ...parseRSSItem(item),
-      id: _.uniqueId(),
-      feedId,
-    }));
+  return Object.values(items).map((item) => ({
+    ...parseRSSItem(item),
+    id: _.uniqueId(),
+    feedId,
+  }));
 };
 
-const getNewPosts = (rssElement, feedId, oldPosts) => {
-  const newPosts = getPosts(rssElement, feedId);
-  return oldPosts
-    .filter((oldPost) => !newPosts.some((post) => post.title === oldPost.title));
-};
-
-const parseRss = (data) => {
-  // console.log('data=>', data);
+const parseRss = (data, feedId) => {
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data.contents, 'application/xml');
   const rssElement = parsedData.querySelector('rss');
-  if (rssElement) return rssElement;
-  throw Error(i18next.t('errors.sourceWithoutRss'));
+  if (!rssElement) throw Error(i18next.t('errors.sourceWithoutRss'));
+  const feedData = parseRSSItem(rssElement);
+  const posts = getPosts(rssElement, feedId);
+  return { feedData, posts };
 };
 
 const makePostsEvents = (clickedPostIds) => {
-  const postsLinksEl = document.getElementsByClassName('post-link');
-  const postsBtnsEl = document.getElementsByClassName('btn-modal');
-  [postsLinksEl, postsBtnsEl].forEach((el) => {
-    Object.values(el).forEach((linkEl) => {
-      linkEl.addEventListener('mouseup', (e) => {
-        const clickedElId = e.target.dataset.id;
-        clickedPostIds.push(clickedElId);
-      });
-    });
+  const postsContainerEl = document.getElementById('postsContainer');
+  postsContainerEl.addEventListener('mouseup', (e) => {
+    // @ts-ignore
+    const clickedElId = e.target.dataset.id;
+    if (!clickedElId) return;
+    clickedPostIds.push(clickedElId);
   });
 };
 
 const getData = (baseURL) => {
-  const urlWithProxy = new URL('/get', 'https://hexlet-allorigins.herokuapp.com');
+  const urlWithProxy = new URL(
+    '/get',
+    'https://hexlet-allorigins.herokuapp.com',
+  );
   urlWithProxy.searchParams.set('disableCache', 'true');
   urlWithProxy.searchParams.set('url', baseURL);
   return axios.get(urlWithProxy.toString());
 };
 
 const autoupdateState = (state, updateThrough = 5000) => {
-  state.feeds.forEach(({ link, id }) => {
-    getData(link).then(({ data }) => {
-      const rssElement = parseRss(data);
-      state.posts.concat(getNewPosts(rssElement, id, state.posts));
-    }, (err) => { state.form.url.error = err.message; });
+  state.feeds.forEach(({ link }) => {
+    getData(link)
+      .then(({ data }) => {
+        const { posts } = parseRss(data);
+        const newPosts = posts
+          .filter((oldPost) => posts.some((post) => post.title !== oldPost.title));
+        state.posts.concat(newPosts);
+      },
+      (err) => {
+        state.form.error = err.message;
+      })
+      .then(() => {
+        setTimeout(() => {
+          autoupdateState(state);
+        }, updateThrough);
+      });
   });
-  setTimeout(() => {
-    autoupdateState(state);
-  }, updateThrough);
 };
 
 export default () => {
@@ -78,12 +80,10 @@ export default () => {
     feeds: [],
     posts: [],
     clickedPostIds: [],
-    stateSubmitProcess: 'processed',
+    loadingData: 'waiting',
     form: {
-      url: {
-        valid: true,
-        error: null,
-      },
+      valid: true,
+      error: null,
     },
   };
 
@@ -118,35 +118,36 @@ export default () => {
     watched.stateSubmitProcess = 'loading';
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    try { validate(url, state.feeds); } catch (err) {
-      watched.form.url = { error: err.message, valid: false };
-      watched.stateSubmitProcess = 'invalid';
+    try {
+      validate(url, state.feeds);
+    } catch (err) {
+      watched.form = { error: err.message, valid: false };
+      watched.stateSubmitProcess = 'failed';
       return;
     }
     getData(url)
       .then(
         ({ data }) => {
-          const rssElement = parseRss(data);
           const feedId = _.uniqueId();
+          const { feedData, posts } = parseRss(data, feedId);
           watched.feeds.push({
-            ...parseRSSItem(rssElement),
+            ...feedData,
             link: url,
             id: feedId,
           });
-          watched.posts = [...getPosts(rssElement, feedId), ...watched.posts];
-          watched.form.url = { error: null, valid: true };
-          watched.stateSubmitProcess = 'processed';
+          watched.posts = [...posts, ...watched.posts];
+          watched.form = { error: null, valid: true };
+          watched.stateSubmitProcess = 'waiting';
           makePostsEvents(watched.clickedPostIds);
           return autoupdateState(watched);
         },
-        (err) => Promise.reject(err),
       )
       .catch((err) => {
         // console.log('MAIN-err-message->', err.message);
         if (err.message.includes('Network')) {
-          watched.form.url = { error: i18next.t('errors.net'), valid: false };
-        } else watched.form.url = { error: err.message, valid: false };
-        watched.stateSubmitProcess = 'invalid';
+          watched.form = { error: i18next.t('errors.net'), valid: false };
+        } else watched.form = { error: err.message, valid: false };
+        watched.stateSubmitProcess = 'failed';
       });
   });
 };
