@@ -6,33 +6,9 @@ import i18next from 'i18next';
 import initView from './view';
 import resources from './locales';
 import validate from './validator';
+import parseData from './parser';
 
 const defaultLanguage = 'ru';
-
-const parseRSSItem = (rssItem) => ({
-  link: rssItem.querySelector('link').textContent,
-  title: rssItem.querySelector('title').textContent,
-  description: rssItem.querySelector('description').textContent,
-});
-
-const getPosts = (rssElement, feedId) => {
-  const items = rssElement.getElementsByTagName('item');
-  return Object.values(items).map((item) => ({
-    ...parseRSSItem(item),
-    id: _.uniqueId(),
-    feedId,
-  }));
-};
-
-const parseRss = (data, feedId) => {
-  const parser = new DOMParser();
-  const parsedData = parser.parseFromString(data.contents, 'application/xml');
-  const rssElement = parsedData.querySelector('rss');
-  if (!rssElement) throw Error(i18next.t('errors.sourceWithoutRss'));
-  const feedData = parseRSSItem(rssElement);
-  const posts = getPosts(rssElement, feedId);
-  return { feedData, posts };
-};
 
 const makePostsEvents = (clickedPostIds) => {
   const postsContainerEl = document.getElementById('postsContainer');
@@ -58,15 +34,13 @@ const autoupdateState = (state, updateThrough = 5000) => {
   state.feeds.forEach(({ link }) => {
     getData(link)
       .then(({ data }) => {
-        const { posts } = parseRss(data);
+        const { posts } = parseData(data);
         const newPosts = posts
           .filter((oldPost) => posts.some((post) => post.title !== oldPost.title));
         state.posts.concat(newPosts);
-      },
-      (err) => {
-        state.form.error = err.message;
       })
-      .then(() => {
+      .catch((err) => { state.form.error = err.message; })
+      .finally(() => {
         setTimeout(() => {
           autoupdateState(state);
         }, updateThrough);
@@ -80,7 +54,7 @@ export default () => {
     feeds: [],
     posts: [],
     clickedPostIds: [],
-    loadingData: 'waiting',
+    loadingData: 'idle',
     form: {
       valid: true,
       error: null,
@@ -105,31 +79,29 @@ export default () => {
 
   const watched = initView(state, elements);
 
-  const lngButtons = document.getElementsByClassName('lng-btn');
-  Object.values(lngButtons).forEach((btnEl) => {
-    btnEl.addEventListener('click', (e) => {
-      e.preventDefault();
-      watched.lng = e.target.id;
-    });
+  const lngButtonsContainer = document.getElementById('switchLng');
+  lngButtonsContainer.addEventListener('click', (e) => {
+    // @ts-ignore
+    watched.lng = e.target.id;
   });
 
   elements.formRss.addEventListener('submit', (e) => {
     e.preventDefault();
-    watched.stateSubmitProcess = 'loading';
+    watched.loadingData = 'loading';
     const formData = new FormData(e.target);
     const url = formData.get('url');
     try {
       validate(url, state.feeds);
     } catch (err) {
       watched.form = { error: err.message, valid: false };
-      watched.stateSubmitProcess = 'failed';
+      watched.loadingData = 'failed';
       return;
     }
     getData(url)
       .then(
         ({ data }) => {
           const feedId = _.uniqueId();
-          const { feedData, posts } = parseRss(data, feedId);
+          const { feedData, posts } = parseData(data, feedId);
           watched.feeds.push({
             ...feedData,
             link: url,
@@ -137,7 +109,7 @@ export default () => {
           });
           watched.posts = [...posts, ...watched.posts];
           watched.form = { error: null, valid: true };
-          watched.stateSubmitProcess = 'waiting';
+          watched.loadingData = 'idle';
           makePostsEvents(watched.clickedPostIds);
           return autoupdateState(watched);
         },
@@ -147,7 +119,7 @@ export default () => {
         if (err.message.includes('Network')) {
           watched.form = { error: i18next.t('errors.net'), valid: false };
         } else watched.form = { error: err.message, valid: false };
-        watched.stateSubmitProcess = 'failed';
+        watched.loadingData = 'failed';
       });
   });
 };

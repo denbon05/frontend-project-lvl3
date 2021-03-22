@@ -151,7 +151,7 @@ const renderPosts = (posts, clickedPosts, postsContainer) => {
 
 const changeForm = (status, { buttonRss, inputRss, responseRss }) => {
   switch (status) {
-    case 'waiting':
+    case 'idle':
       inputRss.removeAttribute('readonly');
       inputRss.value = '';
       buttonRss.disabled = false;
@@ -181,7 +181,7 @@ export default (state, elements) => {
     posts: (posts) => renderPosts(posts, state.clickedPosts, elements.postsContainer),
     lng: (language) => switchLanguage(language),
     clickedPostIds: (ids) => renderClickedLinks(ids),
-    stateSubmitProcess: (status) => changeForm(status, elements),
+    loadingData: (status) => changeForm(status, elements),
   };
 
   const watchedState = onChange(state, (path, value) => {
@@ -189,10 +189,10 @@ export default (state, elements) => {
     // console.log('path=>>', path);
     if (mapping[path]) {
       mapping[path](value);
-    }
-    if (path === 'lng' && state.feeds.length > 0) {
-      mapping.feeds(state.feeds);
-      mapping.posts(state.posts);
+      if (path === 'lng' && state.feeds.length > 0) {
+        mapping.feeds(state.feeds);
+        mapping.posts(state.posts);
+      }
     }
   });
 
