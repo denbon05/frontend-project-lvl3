@@ -196,9 +196,7 @@ export default (state, elements) => {
     // console.log('path=>>', path);
     // console.log('value=>>', value);
     if (!mapping[path]) return;
-    if (mapping[path]) {
-      mapping[path](value);
-    }
+    mapping[path](value);
   });
 
   return watchedState;
