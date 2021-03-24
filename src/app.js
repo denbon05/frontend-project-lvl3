@@ -39,7 +39,7 @@ const autoupdateState = (state, updateThrough = 5000) => {
           .filter((oldPost) => posts.some((post) => post.title !== oldPost.title));
         state.posts.concat(newPosts);
       })
-      .catch((err) => { state.form.error = err.message; })
+      .catch((err) => { state.loadingData = { status: 'failed', error: err.message }; })
       .finally(() => {
         setTimeout(() => {
           autoupdateState(state);
@@ -54,7 +54,10 @@ export default () => {
     feeds: [],
     posts: [],
     clickedPostIds: [],
-    loadingData: 'idle',
+    loadingData: {
+      status: 'idle',
+      error: null,
+    },
     form: {
       valid: true,
       error: null,
@@ -87,14 +90,14 @@ export default () => {
 
   elements.formRss.addEventListener('submit', (e) => {
     e.preventDefault();
-    watched.loadingData = 'loading';
+    watched.loadingData = { status: 'loading', error: null };
     const formData = new FormData(e.target);
     const url = formData.get('url');
     try {
       validate(url, state.feeds);
     } catch (err) {
       watched.form = { error: err.message, valid: false };
-      watched.loadingData = 'failed';
+      watched.loadingData = { status: 'failed', error: null };
       return;
     }
     getData(url)
@@ -109,7 +112,7 @@ export default () => {
           });
           watched.posts = [...posts, ...watched.posts];
           watched.form = { error: null, valid: true };
-          watched.loadingData = 'idle';
+          watched.loadingData = { status: 'idle', error: null };
           makePostsEvents(watched.clickedPostIds);
           return autoupdateState(watched);
         },
@@ -117,9 +120,9 @@ export default () => {
       .catch((err) => {
         // console.log('MAIN-err-message->', err.message);
         if (err.message.includes('Network')) {
-          watched.form = { error: i18next.t('errors.net'), valid: false };
+          watched.loadingData = { status: 'failed', error: i18next.t('errors.net') };
         } else watched.form = { error: err.message, valid: false };
-        watched.loadingData = 'failed';
+        // watched.loadingData = { status: 'failed', ...state.loadingData };
       });
   });
 };

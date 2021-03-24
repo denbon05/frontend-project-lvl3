@@ -8,10 +8,19 @@ const renderTemplateText = () => {
   const leadEl = document.querySelector('.lead');
   const buttonAddEl = document.getElementById('buttonAdd');
   const exampleEl = document.getElementById('urlExample');
+  const feedTitleEl = document.getElementById('feedsTitle');
   mainTitleEl.textContent = i18next.t('form.mainTitle');
   leadEl.textContent = i18next.t('form.formLead');
   buttonAddEl.textContent = i18next.t('form.buttonAdd');
   exampleEl.textContent = i18next.t('form.example');
+  if (feedTitleEl) {
+    feedTitleEl.textContent = i18next.t('feedsTitle');
+    document.getElementById('postsTitle').textContent = i18next.t('postsTitle');
+    Object.values(document.getElementsByClassName('btn-modal'))
+      .forEach((btnEl) => {
+        btnEl.textContent = i18next.t('postsButtonPreview');
+      });
+  }
 };
 
 const switchLanguage = (lng) => {
@@ -29,7 +38,7 @@ const switchLanguage = (lng) => {
   renderTemplateText();
 };
 
-const renderResponse = ({ error, valid }, { responseRss, inputRss }) => {
+const renderResponse = ({ error, valid = false }, { responseRss, inputRss }) => {
   inputRss.className = 'form-control form-control-lg w-80';
   responseRss.className = '';
   responseRss.textContent = '';
@@ -115,7 +124,7 @@ const makePostsEvents = (posts) => {
 const renderFeeds = (feeds, feedsContainer) => {
   const feedsCol = feedsContainer.firstElementChild;
   feedsCol.innerHTML = [
-    `<h2>${i18next.t('feedsTitle')}</h2>`,
+    `<h2 id="feedsTitle">${i18next.t('feedsTitle')}</h2>`,
     '<ul class="list-group mb-5">',
     `${feeds
       .map(({ title, description }) => [
@@ -131,15 +140,13 @@ const renderFeeds = (feeds, feedsContainer) => {
 const renderPosts = (posts, clickedPosts, postsContainer) => {
   const postsCol = postsContainer.firstElementChild;
   postsCol.innerHTML = [
-    `<h2>${i18next.t('postsTitle')}</h2>`,
+    `<h2 id="postsTitle">${i18next.t('postsTitle')}</h2>`,
     '<ul class="list-group mb-5" id="posts-list">',
     `${posts
       .map(({ title, link, id }) => [
         '<li class="list-group-item d-flex justify-content-between align-items-start">',
         `<a role="link" href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
-        `<button role="button" type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="preview" data-toggle="modal" data-target="#modal">${i18next.t(
-          'postsButtonPreview',
-        )}</button>`,
+        `<button role="button" type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="preview" data-toggle="modal" data-target="#modal">${i18next.t('postsButtonPreview')}</button>`,
         '</li>',
       ].join(''))
       .join('')}`,
@@ -149,7 +156,7 @@ const renderPosts = (posts, clickedPosts, postsContainer) => {
   renderClickedLinks(clickedPosts);
 };
 
-const changeForm = (status, { buttonRss, inputRss, responseRss }) => {
+const changeForm = ({ status, error }, { buttonRss, inputRss, responseRss }) => {
   switch (status) {
     case 'idle':
       inputRss.removeAttribute('readonly');
@@ -165,6 +172,7 @@ const changeForm = (status, { buttonRss, inputRss, responseRss }) => {
     case 'failed':
       inputRss.removeAttribute('readonly');
       buttonRss.disabled = false;
+      if (error) renderResponse({ error }, { inputRss, responseRss });
       return;
     default:
       throw Error(`Unknow form status: "${status}"`);
@@ -181,18 +189,15 @@ export default (state, elements) => {
     posts: (posts) => renderPosts(posts, state.clickedPosts, elements.postsContainer),
     lng: (language) => switchLanguage(language),
     clickedPostIds: (ids) => renderClickedLinks(ids),
-    loadingData: (status) => changeForm(status, elements),
+    loadingData: (loadingInfo) => changeForm(loadingInfo, elements),
   };
 
   const watchedState = onChange(state, (path, value) => {
-    if (!mapping[path]) return;
     // console.log('path=>>', path);
+    // console.log('value=>>', value);
+    if (!mapping[path]) return;
     if (mapping[path]) {
       mapping[path](value);
-      if (path === 'lng' && state.feeds.length > 0) {
-        mapping.feeds(state.feeds);
-        mapping.posts(state.posts);
-      }
     }
   });
 

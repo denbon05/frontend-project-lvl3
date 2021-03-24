@@ -3,7 +3,6 @@
 import i18next from 'i18next';
 import { uniqueId } from 'lodash';
 
-
 const parseRSSItem = (rssItem) => ({
   link: rssItem.querySelector('link').textContent,
   title: rssItem.querySelector('title').textContent,
@@ -17,7 +16,7 @@ export default (data, feedId) => {
   if (!rssElement) throw Error(i18next.t('errors.sourceWithoutRss'));
   const feedData = parseRSSItem(rssElement);
   const items = rssElement.getElementsByTagName('item');
-  const posts =  Object.values(items).map((item) => ({
+  const posts = Object.values(items).map((item) => ({
     ...parseRSSItem(item),
     id: uniqueId(),
     feedId,
