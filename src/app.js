@@ -1,14 +1,11 @@
 // @ts-check
 
-import _ from 'lodash';
+import { uniqueId } from 'lodash';
 import axios from 'axios';
-import i18next from 'i18next';
 import initView from './view';
-import resources from './locales';
 import validate from './validator';
 import parseData from './parser';
-
-const defaultLanguage = 'ru';
+import initLng from './init';
 
 const makePostsEvents = (clickedPostIds) => {
   const postsContainerEl = document.getElementById('postsContainer');
@@ -31,13 +28,14 @@ const getData = (baseURL) => {
 };
 
 const autoupdateState = (state, updateThrough = 5000) => {
-  state.feeds.forEach(({ link }) => {
+  state.feeds.forEach(({ link, id }) => {
     getData(link)
       .then(({ data }) => {
-        const { posts } = parseData(data);
-        const newPosts = posts
-          .filter((oldPost) => posts.some((post) => post.title !== oldPost.title));
-        state.posts.concat(newPosts);
+        const { postsData } = parseData(data);
+        const newPosts = postsData
+          .filter((oldPost) => postsData.some((post) => post.title !== oldPost.title));
+        if (newPosts.length === 0) return;
+        state.posts.concat([{ ...newPosts, feedId: id, id: uniqueId() }]);
       })
       .catch((err) => { state.loadingData = { status: 'failed', error: err.message }; })
       .finally(() => {
@@ -49,8 +47,10 @@ const autoupdateState = (state, updateThrough = 5000) => {
 };
 
 export default () => {
+  const i18n = initLng();
+  // console.log('i18n=>', i18n);
   const state = {
-    lng: defaultLanguage,
+    lng: i18n.language,
     feeds: [],
     posts: [],
     clickedPostIds: [],
@@ -64,12 +64,6 @@ export default () => {
     },
   };
 
-  i18next.init({
-    lng: state.lng,
-    // debug: true,
-    resources,
-  });
-
   const elements = {
     inputRss: document.getElementById('rssInput'),
     buttonRss: document.getElementById('buttonAdd'),
@@ -78,6 +72,7 @@ export default () => {
     rssContainer: document.getElementById('rssContainer'),
     feedsContainer: document.getElementById('feedsContainer'),
     postsContainer: document.getElementById('postsContainer'),
+    lngConatiner: document.getElementById('switchLng'),
   };
 
   const watched = initView(state, elements);
@@ -93,18 +88,18 @@ export default () => {
     watched.loadingData = { status: 'loading', error: null };
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    try {
-      validate(url, state.feeds);
-    } catch (err) {
-      watched.form = { error: err.message, valid: false };
+    const error = validate(url, state.feeds);
+    if (error) {
+      watched.form = { error: i18n.t(error.message), valid: false };
       watched.loadingData = { status: 'failed', error: null };
       return;
     }
     getData(url)
       .then(
         ({ data }) => {
-          const feedId = _.uniqueId();
-          const { feedData, posts } = parseData(data, feedId);
+          const feedId = uniqueId();
+          const { feedData, postsData } = parseData(data);
+          const posts = postsData.map((post) => ({ ...post, feedId, id: uniqueId() }));
           watched.feeds.push({
             ...feedData,
             link: url,
@@ -120,9 +115,8 @@ export default () => {
       .catch((err) => {
         // console.log('MAIN-err-message->', err.message);
         if (err.message.includes('Network')) {
-          watched.loadingData = { status: 'failed', error: i18next.t('errors.net') };
-        } else watched.form = { error: err.message, valid: false };
-        // watched.loadingData = { status: 'failed', ...state.loadingData };
+          watched.loadingData = { status: 'failed', error: i18n.t('errors.net') };
+        } else watched.form = { error: i18n.t(err.message), valid: false };
       });
   });
 };

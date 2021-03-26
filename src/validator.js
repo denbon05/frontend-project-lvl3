@@ -1,13 +1,12 @@
 import * as yup from 'yup';
-import i18next from 'i18next';
 
 const validate = (url, feeds) => {
   yup.setLocale({
     mixed: {
-      required: i18next.t('errors.required'),
+      required: () => 'errors.required',
     },
     string: {
-      url: i18next.t('errors.validURL'),
+      url: () => 'errors.validURL',
     },
   });
 
@@ -18,9 +17,14 @@ const validate = (url, feeds) => {
     .url()
     .trim()
     .required()
-    .notOneOf(links, () => i18next.t('errors.existRss', { url }));
+    .notOneOf(links, () => 'errors.existRss');
 
-  return schema.validateSync(url);
+  try {
+    schema.validateSync(url);
+  } catch (error) {
+    return error;
+  }
+  return null;
 };
 
 export default validate;

@@ -1,35 +1,36 @@
 // @ts-check
 
-import i18next from 'i18next';
 import onChange from 'on-change';
+import initLng from './init';
 
-const renderTemplateText = () => {
+const i18n = initLng();
+
+export const renderTemplateText = () => {
   const mainTitleEl = document.querySelector('.main-title');
   const leadEl = document.querySelector('.lead');
   const buttonAddEl = document.getElementById('buttonAdd');
   const exampleEl = document.getElementById('urlExample');
   const feedTitleEl = document.getElementById('feedsTitle');
-  mainTitleEl.textContent = i18next.t('form.mainTitle');
-  leadEl.textContent = i18next.t('form.formLead');
-  buttonAddEl.textContent = i18next.t('form.buttonAdd');
-  exampleEl.textContent = i18next.t('form.example');
+  mainTitleEl.textContent = i18n.t('form.mainTitle');
+  leadEl.textContent = i18n.t('form.formLead');
+  buttonAddEl.textContent = i18n.t('form.buttonAdd');
+  exampleEl.textContent = i18n.t('form.example');
   if (feedTitleEl) {
-    feedTitleEl.textContent = i18next.t('feedsTitle');
-    document.getElementById('postsTitle').textContent = i18next.t('postsTitle');
+    feedTitleEl.textContent = i18n.t('feedsTitle');
+    document.getElementById('postsTitle').textContent = i18n.t('postsTitle');
     Object.values(document.getElementsByClassName('btn-modal'))
       .forEach((btnEl) => {
-        btnEl.textContent = i18next.t('postsButtonPreview');
+        btnEl.textContent = i18n.t('postsButtonPreview');
       });
   }
 };
 
 const switchLanguage = (lng) => {
-  i18next.changeLanguage(lng);
-
+  i18n.changeLanguage(lng);
   const btnAdd = document.getElementById('buttonAdd');
   const lngButtons = document.getElementsByClassName('lng-btn');
   // @ts-ignore
-  btnAdd.value = i18next.t('form.buttonAdd');
+  btnAdd.value = i18n.t('form.buttonAdd');
   Object.values(lngButtons).forEach((btnEl) => {
     btnEl.className = 'btn lng-btn';
     if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
@@ -49,7 +50,7 @@ const renderResponse = ({ error, valid = false }, { responseRss, inputRss }) => 
   if (!valid) inputRss.classList.add('is-invalid');
   if (!error && valid) {
     inputRss.classList.add('is-valid');
-    responseRss.textContent = i18next.t('succesText');
+    responseRss.textContent = i18n.t('succesText');
     responseRss.classList.add('text-success');
   }
 };
@@ -72,7 +73,7 @@ const addAttributes = (modalEl, bgFadeEl) => {
 
 const renderClickedLinks = (ids) => {
   if (!ids) return;
-  // console.log('ids=>>>', ids);
+
   ids.forEach((id) => {
     const aEl = document.querySelector(`[data-id="${id}"]`);
     aEl.classList.remove('font-weight-bold');
@@ -88,10 +89,10 @@ const showModal = (title, body, link) => {
   const closeModalBtns = document.getElementsByClassName('close-modal');
   const bgFadeEl = document.createElement('div');
   addAttributes(modalEl, bgFadeEl);
-  document.querySelector('.btn-close-modal').textContent = i18next.t(
+  document.querySelector('.btn-close-modal').textContent = i18n.t(
     'modal.closeModalButton',
   );
-  fullArticleButtonEl.textContent = i18next.t('modal.oppenLinkButton');
+  fullArticleButtonEl.textContent = i18n.t('modal.oppenLinkButton');
   modalTitleEl.textContent = title;
   modalBodyEl.innerHTML = `<p>${body}</p>`;
   fullArticleButtonEl.setAttribute('href', link);
@@ -123,37 +124,64 @@ const makePostsEvents = (posts) => {
 
 const renderFeeds = (feeds, feedsContainer) => {
   const feedsCol = feedsContainer.firstElementChild;
-  feedsCol.innerHTML = [
-    `<h2 id="feedsTitle">${i18next.t('feedsTitle')}</h2>`,
-    '<ul class="list-group mb-5">',
-    `${feeds
-      .map(({ title, description }) => [
-        '<li class="list-group-item">',
-        `<h3>${title}</h3>`,
-        `<p>${description}</p></li>`,
-      ].join(''))
-      .join('')}`,
-    '</ul >',
-  ].join('');
+  feedsCol.innerHTML = '';
+  const feedsTitleEl = document.createElement('h2');
+  const ulEl = document.createElement('ul');
+  feedsTitleEl.textContent = i18n.t('feedsTitle');
+  feedsTitleEl.id = 'feedsTitle';
+  ulEl.className = 'list-group mb-5';
+  feeds.forEach(({ title, description }) => {
+    const liEl = document.createElement('li');
+    liEl.className = 'list-group-item';
+    const feedTitleEl = document.createElement('h3');
+    feedTitleEl.textContent = title;
+    const descriptionPEl = document.createElement('p');
+    descriptionPEl.textContent = description;
+    liEl.appendChild(feedTitleEl);
+    liEl.appendChild(descriptionPEl);
+    ulEl.appendChild(liEl);
+  });
+  feedsCol.appendChild(feedsTitleEl);
+  feedsCol.appendChild(ulEl);
 };
 
-const renderPosts = (posts, clickedPosts, postsContainer) => {
+const renderPosts = (posts, clickedPostIds, postsContainer) => {
   const postsCol = postsContainer.firstElementChild;
-  postsCol.innerHTML = [
-    `<h2 id="postsTitle">${i18next.t('postsTitle')}</h2>`,
-    '<ul class="list-group mb-5" id="posts-list">',
-    `${posts
-      .map(({ title, link, id }) => [
-        '<li class="list-group-item d-flex justify-content-between align-items-start">',
-        `<a role="link" href="${link}" target="_blank" data-id="${id}" data-testid="post-link" rel="Post title" class="post-link font-weight-bold">${title}</a>`,
-        `<button role="button" type="button" class="btn btn-primary btn-small btn-modal" data-id="${id}" data-testid="preview" data-toggle="modal" data-target="#modal">${i18next.t('postsButtonPreview')}</button>`,
-        '</li>',
-      ].join(''))
-      .join('')}`,
-    '</ul>',
-  ].join('');
+  const postsTitleEl = document.createElement('h2');
+  const postsUlEl = document.createElement('ul');
+  postsTitleEl.id = 'postsTitle';
+  postsTitleEl.textContent = i18n.t('postsTitle');
+  postsUlEl.className = 'list-group mb-5';
+  postsUlEl.id = 'posts-list';
+  postsCol.appendChild(postsTitleEl);
+  postsCol.appendChild(postsUlEl);
+  posts.forEach(({ title, link, id }) => {
+    const liEl = document.createElement('li');
+    liEl.className = 'list-group-item d-flex justify-content-between align-items-start';
+    const aEl = document.createElement('a');
+    aEl.setAttribute('role', 'link');
+    aEl.setAttribute('href', link);
+    aEl.setAttribute('target', '_blank');
+    aEl.setAttribute('rel', 'Post title');
+    aEl.dataset.id = id;
+    aEl.dataset.testid = 'post-link';
+    const fontWeight = clickedPostIds.includes(id) ? 'font-weight-normal' : 'font-weight-bold';
+    aEl.className = `post-link ${fontWeight}`;
+    aEl.textContent = title;
+    const modalBtnEl = document.createElement('button');
+    modalBtnEl.setAttribute('role', 'button');
+    modalBtnEl.setAttribute('type', 'button');
+    modalBtnEl.dataset.id = id;
+    modalBtnEl.dataset.testid = 'preview';
+    modalBtnEl.dataset.target = '#modal';
+    modalBtnEl.dataset.toggle = 'modal';
+    modalBtnEl.textContent = i18n.t('postsButtonPreview');
+    modalBtnEl.className = 'btn btn-primary btn-small btn-modal';
+    liEl.appendChild(aEl);
+    liEl.appendChild(modalBtnEl);
+    postsUlEl.appendChild(liEl);
+  });
   makePostsEvents(posts);
-  renderClickedLinks(clickedPosts);
 };
 
 const changeForm = ({ status, error }, { buttonRss, inputRss, responseRss }) => {
@@ -186,7 +214,7 @@ export default (state, elements) => {
   const mapping = {
     form: (value) => renderResponse(value, elements),
     feeds: (feeds) => renderFeeds(feeds, elements.feedsContainer),
-    posts: (posts) => renderPosts(posts, state.clickedPosts, elements.postsContainer),
+    posts: (posts) => renderPosts(posts, state.clickedPostIds, elements.postsContainer),
     lng: (language) => switchLanguage(language),
     clickedPostIds: (ids) => renderClickedLinks(ids),
     loadingData: (loadingInfo) => changeForm(loadingInfo, elements),
