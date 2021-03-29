@@ -9,8 +9,9 @@ const parseRSSItem = (rssItem) => ({
 export default (data) => {
   const parser = new DOMParser();
   const parsedData = parser.parseFromString(data.contents, 'application/xml');
+  const errorElement = parsedData.querySelector('parsererror');
+  if (errorElement) throw Error('errors.sourceWithoutRss');
   const rssElement = parsedData.querySelector('rss');
-  if (!rssElement) throw Error('errors.sourceWithoutRss');
   const feedData = parseRSSItem(rssElement);
   const items = rssElement.getElementsByTagName('item');
   const postsData = Object.values(items).map((item) => ({

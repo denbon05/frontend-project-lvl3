@@ -94,7 +94,10 @@ const showModal = (title, body, link) => {
   );
   fullArticleButtonEl.textContent = i18n.t('modal.oppenLinkButton');
   modalTitleEl.textContent = title;
-  modalBodyEl.innerHTML = `<p>${body}</p>`;
+  modalBodyEl.innerHTML = '';
+  const pElement = document.createElement('p');
+  pElement.textContent = body;
+  modalBodyEl.appendChild(pElement);
   fullArticleButtonEl.setAttribute('href', link);
   fullArticleButtonEl.setAttribute('target', '_blank');
   Object.values(closeModalBtns).forEach((closeBtnEl) => closeBtnEl.addEventListener('click', (e) => {

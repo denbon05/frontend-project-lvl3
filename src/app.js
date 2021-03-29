@@ -1,6 +1,6 @@
 // @ts-check
 
-import { uniqueId } from 'lodash';
+import { uniqueId, differenceBy } from 'lodash';
 import axios from 'axios';
 import initView from './view';
 import validate from './validator';
@@ -24,7 +24,7 @@ const getData = (baseURL) => {
   );
   urlWithProxy.searchParams.set('disableCache', 'true');
   urlWithProxy.searchParams.set('url', baseURL);
-  return axios.get(urlWithProxy.toString());
+  return axios.get(urlWithProxy.toString()).catch(() => { throw Error('errors.net'); });
 };
 
 const autoupdateState = (state, updateThrough = 5000) => {
@@ -32,8 +32,7 @@ const autoupdateState = (state, updateThrough = 5000) => {
     getData(link)
       .then(({ data }) => {
         const { postsData } = parseData(data);
-        const newPosts = postsData
-          .filter((oldPost) => postsData.some((post) => post.title !== oldPost.title));
+        const newPosts = differenceBy(postsData, state.posts, 'title');
         if (newPosts.length === 0) return;
         state.posts.concat([{ ...newPosts, feedId: id, id: uniqueId() }]);
       })
@@ -114,9 +113,7 @@ export default () => {
       )
       .catch((err) => {
         // console.log('MAIN-err-message->', err.message);
-        if (err.message.includes('Network')) {
-          watched.loadingData = { status: 'failed', error: i18n.t('errors.net') };
-        } else watched.form = { error: i18n.t(err.message), valid: false };
+        watched.loadingData = { status: 'failed', error: i18n.t(err.message) };
       });
   });
 };
