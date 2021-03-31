@@ -4,7 +4,7 @@ export default {
       mainTitle: 'RSS Reader',
       formLead: 'Start reading RSS today! It is easy, it is nicely.',
       buttonAdd: 'Add',
-      example: 'Example: http://feeds.linuxportal.pl/LinuxPortalpl-news',
+      example: 'Example: https://lorem-rss.herokuapp.com/feed?unit=second&interval=20',
     },
     postsButtonPreview: 'Preview',
     feedsTitle: 'Feeds',
