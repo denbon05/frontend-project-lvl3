@@ -47,7 +47,7 @@ const autoupdateState = (state, updateThrough = 5000) => {
   });
 };
 
-const initLng = (lng) => {
+const initLng = (lng = 'ru') => {
   const i18n = i18next.createInstance();
   i18n.init({
     lng,
@@ -56,7 +56,7 @@ const initLng = (lng) => {
   return Promise.resolve(i18n);
 };
 
-const app = (lng = 'ru') => {
+export default () => {
   const elements = {
     inputRss: document.getElementById('rssInput'),
     buttonRss: document.getElementById('buttonAdd'),
@@ -82,7 +82,7 @@ const app = (lng = 'ru') => {
     },
   };
 
-  initLng(lng)
+  initLng()
     .then((i18n) => {
       const watched = initView(state, elements, i18n);
 
@@ -131,5 +131,3 @@ const app = (lng = 'ru') => {
       });
     });
 };
-
-export default app;
