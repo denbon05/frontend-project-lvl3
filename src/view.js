@@ -1,11 +1,8 @@
 // @ts-check
 
 import onChange from 'on-change';
-import initLng from './init';
 
-const i18n = initLng();
-
-export const renderTemplateText = () => {
+export const renderTemplateText = (i18n) => {
   const mainTitleEl = document.querySelector('.main-title');
   const leadEl = document.querySelector('.lead');
   const buttonAddEl = document.getElementById('buttonAdd');
@@ -25,7 +22,7 @@ export const renderTemplateText = () => {
   }
 };
 
-const switchLanguage = (lng) => {
+export const switchLanguage = (lng, i18n) => {
   i18n.changeLanguage(lng);
   const btnAdd = document.getElementById('buttonAdd');
   const lngButtons = document.getElementsByClassName('lng-btn');
@@ -36,10 +33,10 @@ const switchLanguage = (lng) => {
     if (lng === btnEl.id) btnEl.classList.add('btn-secondary');
     else btnEl.classList.add('btn-outline-secondary');
   });
-  renderTemplateText();
+  renderTemplateText(i18n);
 };
 
-const renderResponse = ({ error, valid = false }, { responseRss, inputRss }) => {
+const renderResponse = ({ error, valid = false }, { responseRss, inputRss }, i18n) => {
   inputRss.className = 'form-control form-control-lg w-80';
   responseRss.className = '';
   responseRss.textContent = '';
@@ -81,7 +78,7 @@ const renderClickedLinks = (ids) => {
   });
 };
 
-const showModal = (title, body, link) => {
+const showModal = (title, body, link, i18n) => {
   const modalEl = document.querySelector('.modal');
   const modalTitleEl = document.querySelector('.modal-title');
   const modalBodyEl = document.querySelector('.modal-body');
@@ -110,14 +107,14 @@ const showModal = (title, body, link) => {
   });
 };
 
-const makePostsEvents = (posts) => {
+const makePostsEvents = (posts, i18n) => {
   const postsListContainer = document.getElementById('posts-list');
   postsListContainer.addEventListener('click', (e) => {
     // @ts-ignore
     const { id: btnId } = e.target.dataset;
     if (!btnId) return;
     const { title, description, link } = posts.find(({ id }) => id === btnId);
-    showModal(title, description, link);
+    showModal(title, description, link, i18n);
     // @ts-ignore
     e.target.classList.remove('font-weight-bold');
     // @ts-ignore
@@ -125,7 +122,7 @@ const makePostsEvents = (posts) => {
   });
 };
 
-const renderFeeds = (feeds, feedsContainer) => {
+const renderFeeds = (feeds, feedsContainer, i18n) => {
   const feedsCol = feedsContainer.firstElementChild;
   feedsCol.innerHTML = '';
   const feedsTitleEl = document.createElement('h2');
@@ -148,8 +145,9 @@ const renderFeeds = (feeds, feedsContainer) => {
   feedsCol.appendChild(ulEl);
 };
 
-const renderPosts = (posts, clickedPostIds, postsContainer) => {
+const renderPosts = (posts, clickedPostIds, postsContainer, i18n) => {
   const postsCol = postsContainer.firstElementChild;
+  postsCol.innerHTML = '';
   const postsTitleEl = document.createElement('h2');
   const postsUlEl = document.createElement('ul');
   postsTitleEl.id = 'postsTitle';
@@ -184,7 +182,7 @@ const renderPosts = (posts, clickedPostIds, postsContainer) => {
     liEl.appendChild(modalBtnEl);
     postsUlEl.appendChild(liEl);
   });
-  makePostsEvents(posts);
+  makePostsEvents(posts, i18n);
 };
 
 const changeForm = ({ status, error }, { buttonRss, inputRss, responseRss }) => {
@@ -210,15 +208,14 @@ const changeForm = ({ status, error }, { buttonRss, inputRss, responseRss }) => 
   }
 };
 
-export default (state, elements) => {
+export default (state, elements, i18n) => {
   elements.inputRss.focus();
 
   // ! Controllers
   const mapping = {
-    form: (value) => renderResponse(value, elements),
-    feeds: (feeds) => renderFeeds(feeds, elements.feedsContainer),
-    posts: (posts) => renderPosts(posts, state.clickedPostIds, elements.postsContainer),
-    lng: (language) => switchLanguage(language),
+    form: (value) => renderResponse(value, elements, i18n),
+    feeds: (feeds) => renderFeeds(feeds, elements.feedsContainer, i18n),
+    posts: (posts) => renderPosts(posts, state.clickedPostIds, elements.postsContainer, i18n),
     clickedPostIds: (ids) => renderClickedLinks(ids),
     loadingData: (loadingInfo) => changeForm(loadingInfo, elements),
   };

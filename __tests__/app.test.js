@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import nock from 'nock';
 import axios from 'axios';
 import resources from '../src/locales';
-import app from '../src/app';
+import app from '../src/init.js';
 
 // If you are using jsdom, axios will default to using the XHR adapter which
 // can't be intercepted by nock. So, configure axios to use the node adapter.
