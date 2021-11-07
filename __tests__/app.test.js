@@ -86,7 +86,7 @@ describe('Show errors in form', () => {
 
     userEvent.type(elements.input, nonRssLink);
     userEvent.click(elements.submit);
-    expect(await screen.findByText(new RegExp(errors.sourceWithoutRss, 'i')));
+    expect(await screen.findByText(new RegExp(errors.sourceWithoutRss, 'i'))).toBeInTheDocument();
   });
 
   test('Validation: RSS feed already exist & check disable button', async () => {
