@@ -57,7 +57,7 @@ const renderClickedLinks = (ids) => {
 
   ids.forEach((id) => {
     const aEl = document.querySelector(`[data-id="${id}"]`);
-    aEl.classList.remove('font-weight-bold');
+    aEl.classList.remove('fw-bold');
     aEl.classList.add('font-weight-normal');
   });
 };
@@ -119,7 +119,7 @@ export default (state, elements, i18n) => {
       const { title, description, link } = posts.find(({ id }) => id === btnId);
       showModal(title, description, link);
       // @ts-ignore
-      e.target.classList.remove('font-weight-bold');
+      e.target.classList.remove('fw-bold');
       // @ts-ignore
       e.target.classList.add('font-weight-normal');
     });
@@ -169,7 +169,7 @@ export default (state, elements, i18n) => {
       aEl.setAttribute('rel', 'Post title');
       aEl.dataset.id = id;
       aEl.dataset.testid = 'post-link';
-      const fontWeight = clickedPostIds.includes(id) ? 'font-weight-normal' : 'font-weight-bold';
+      const fontWeight = clickedPostIds.includes(id) ? 'font-weight-normal' : 'fw-bold';
       aEl.className = `post-link ${fontWeight}`;
       aEl.textContent = title;
       const modalBtnEl = document.createElement('button');

@@ -149,15 +149,15 @@ describe('Positive cases', () => {
 
     const postLinks = await screen.findAllByTestId('post-link');
     const previewBtns = await screen.findAllByTestId('preview');
-    expect(postLinks[2]).toHaveClass('font-weight-bold');
+    expect(postLinks[2]).toHaveClass('fw-bold');
     userEvent.click(postLinks[2]);
     userEvent.click(previewBtns[4]);
     const updatedPostLinks = await screen.findAllByTestId('post-link');
-    expect(updatedPostLinks[2]).not.toHaveClass('font-weight-bold');
-    expect(updatedPostLinks[4]).not.toHaveClass('font-weight-bold');
+    expect(updatedPostLinks[2]).not.toHaveClass('fw-bold');
+    expect(updatedPostLinks[4]).not.toHaveClass('fw-bold');
     expect(updatedPostLinks[4]).toHaveClass('font-weight-normal');
     expect(updatedPostLinks[2]).toHaveClass('font-weight-normal');
-    expect(updatedPostLinks[3]).toHaveClass('post-link font-weight-bold');
+    expect(updatedPostLinks[3]).toHaveClass('post-link fw-bold');
     expect(
       await screen.findByText(translation.modal.oppenLinkButton),
     ).toBeVisible();
