@@ -27,7 +27,7 @@ nock.disableNetConnect();
 // const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 const proxyurl = 'https://hexlet-allorigins.herokuapp.com/';
 
-const { /* en, */ ru } = resources;
+const { en, ru } = resources;
 const rss1Data = readFile('1.rss');
 const rss2Data = readFile('2.rss');
 const rssLink1 = 'https://news.rambler.ru/rss/photo/';
@@ -51,6 +51,7 @@ beforeEach(async () => {
   elements.input = screen.getByRole('textbox', { name: 'url' });
   elements.submit = screen.getByRole('button', { name: 'add' });
   elements.responseEl = screen.getByRole('doc-noteref');
+  elements.enBtn = screen.getByRole('doc-qna');
 
   app();
 });
@@ -166,21 +167,18 @@ describe('Positive cases', () => {
   });
 });
 
-// test('Switch language to English', async () => {
-//   applyNock(rssLink1, rss1Data);
+test('Switch language to English', async () => {
+  applyNock(rssLink1, rss1Data);
 
-//   const btnsContainer = document.getElementById('switchLng');
-//   const enBtn = await findByText(btnsContainer, 'en');
-//   expect(enBtn).toBeInTheDocument();
-//   userEvent.click(enBtn);
-//   const { translation } = en;
-//   expect(
-//     await screen.findByText(translation.form.mainTitle),
-//   ).toBeInTheDocument();
-//   expect(
-//     await screen.findByText(translation.form.buttonAdd),
-//   ).toBeInTheDocument();
-//   userEvent.type(elements.input, rssLink1);
-//   userEvent.click(elements.submit);
-//   expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
-// });
+  userEvent.click(elements.enBtn);
+  const { translation } = en;
+  expect(
+    await screen.findByText(translation.form.mainTitle),
+  ).toBeInTheDocument();
+  expect(
+    await screen.findByText(translation.form.buttonAdd),
+  ).toBeInTheDocument();
+  userEvent.type(elements.input, rssLink1);
+  userEvent.click(elements.submit);
+  expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
+});
