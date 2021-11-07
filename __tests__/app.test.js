@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import fs from 'fs';
 import path from 'path';
 import {
-  screen, waitFor, getByText, findByText,
+  screen, waitFor,
 } from '@testing-library/dom';
 import userEvent from '@testing-library/user-event';
 import nock from 'nock';
@@ -27,7 +27,7 @@ nock.disableNetConnect();
 // const proxyurl = 'https://cors-anywhere.herokuapp.com/';
 const proxyurl = 'https://hexlet-allorigins.herokuapp.com/';
 
-const { en, ru } = resources;
+const { /* en, */ ru } = resources;
 const rss1Data = readFile('1.rss');
 const rss2Data = readFile('2.rss');
 const rssLink1 = 'https://news.rambler.ru/rss/photo/';
@@ -51,7 +51,6 @@ beforeEach(async () => {
   elements.input = screen.getByRole('textbox', { name: 'url' });
   elements.submit = screen.getByRole('button', { name: 'add' });
   elements.responseEl = screen.getByRole('doc-noteref');
-  elements.resContainer = document.getElementById('response');
 
   app();
 });
@@ -69,7 +68,7 @@ describe('Show errors in form', () => {
     userEvent.type(elements.input, rssLink1);
     userEvent.click(elements.submit);
     expect(
-      await findByText(elements.resContainer, errors.net),
+      await screen.findByText(errors.net),
     ).toBeInTheDocument();
   });
 
@@ -86,9 +85,7 @@ describe('Show errors in form', () => {
 
     userEvent.type(elements.input, nonRssLink);
     userEvent.click(elements.submit);
-    await waitFor(() => expect(
-      getByText(elements.responseEl, new RegExp(errors.sourceWithoutRss, 'i')),
-    ).toBeInTheDocument());
+    expect(await screen.findByText(new RegExp(errors.sourceWithoutRss, 'i')));
   });
 
   test('Validation: RSS feed already exist & check disable button', async () => {
@@ -104,7 +101,7 @@ describe('Show errors in form', () => {
     userEvent.type(elements.input, rssLink1);
     userEvent.click(elements.submit);
     expect(
-      await findByText(elements.resContainer, errors.existRss.split(':')[0], {
+      await screen.findByText(errors.existRss.split(':')[0], {
         exact: false,
       }),
     ).toBeVisible();
@@ -169,21 +166,21 @@ describe('Positive cases', () => {
   });
 });
 
-test('Switch language to English', async () => {
-  applyNock(rssLink1, rss1Data);
+// test('Switch language to English', async () => {
+//   applyNock(rssLink1, rss1Data);
 
-  const btnsContainer = document.getElementById('switchLng');
-  const enBtn = await findByText(btnsContainer, 'en');
-  expect(enBtn).toBeInTheDocument();
-  userEvent.click(enBtn);
-  const { translation } = en;
-  expect(
-    await screen.findByText(translation.form.mainTitle),
-  ).toBeInTheDocument();
-  expect(
-    await screen.findByText(translation.form.buttonAdd),
-  ).toBeInTheDocument();
-  userEvent.type(elements.input, rssLink1);
-  userEvent.click(elements.submit);
-  expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
-});
+//   const btnsContainer = document.getElementById('switchLng');
+//   const enBtn = await findByText(btnsContainer, 'en');
+//   expect(enBtn).toBeInTheDocument();
+//   userEvent.click(enBtn);
+//   const { translation } = en;
+//   expect(
+//     await screen.findByText(translation.form.mainTitle),
+//   ).toBeInTheDocument();
+//   expect(
+//     await screen.findByText(translation.form.buttonAdd),
+//   ).toBeInTheDocument();
+//   userEvent.type(elements.input, rssLink1);
+//   userEvent.click(elements.submit);
+//   expect(await screen.findByText(translation.succesText)).toBeInTheDocument();
+// });
