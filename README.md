@@ -1,4 +1,4 @@
-# RSS agreggator
+# RSS aggregator
 
 ## <a href="https://frontend-project-lvl3-git-main-denbon05.vercel.app/">Follow link</a>
 
